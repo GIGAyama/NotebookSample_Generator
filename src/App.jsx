@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { 
-  Settings, Printer, Download, BookOpen, LayoutTemplate, Type, FileText, 
-  Clock, AlertTriangle, Save, FolderOpen, Upload, Pencil, Eye, 
-  SquareDashed, CheckCircle, Trash2, Loader2, X, Highlighter, Eraser, Keyboard
+import {
+  Settings, Printer, Download, BookOpen, LayoutTemplate, Type, FileText,
+  Clock, AlertTriangle, Save, FolderOpen, Upload, Pencil, Eye,
+  SquareDashed, CheckCircle, Trash2, Loader2, X, Highlighter, Eraser, Keyboard,
+  Database, HelpCircle
 } from 'lucide-react';
 
 // ==========================================
@@ -180,23 +181,35 @@ const loadHtml2Canvas = () => {
 // 3. UIコンポーネント群
 // ==========================================
 
-const Header = ({ onShowHelp }) => (
-  <nav className="bg-white border-b-4 border-emerald-700 px-6 py-2.5 flex justify-between items-center shadow-sm z-10 no-print relative">
+const Header = ({ onShowHelp, onShowSupport, onShowData }) => (
+  <nav className="bg-white border-b-4 border-emerald-700 px-4 py-1.5 flex justify-between items-center shadow-sm z-10 no-print relative">
     <div className="flex items-center gap-2">
-      <div className="bg-emerald-100 p-2 rounded-xl text-emerald-800">
-        <BookOpen size={24} strokeWidth={2.5} />
+      <div className="bg-emerald-100 p-1.5 rounded-lg text-emerald-800">
+        <BookOpen size={20} strokeWidth={2.5} />
       </div>
-      <h1 className="text-xl font-bold text-slate-800 tracking-wide">ノート見本作成ツール <span className="text-sm text-emerald-700 font-bold ml-2 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">PRO</span></h1>
+      <h1 className="text-lg font-bold text-slate-800 tracking-wide">ノート見本作成ツール <span className="text-xs text-emerald-700 font-bold ml-1 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">PRO</span></h1>
     </div>
-    <button onClick={onShowHelp} className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-200 transition-colors text-sm font-bold shadow-sm" title="キーボードショートカット一覧">
-      <Keyboard size={16} />
-      <span className="hidden sm:inline">ショートカット</span> <kbd className="font-mono text-[10px] bg-white px-1 border border-emerald-200 rounded shadow-sm text-slate-500">F1</kbd>
-    </button>
+    <div className="flex items-center gap-2">
+      <button onClick={onShowSupport} className="flex items-center gap-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg border border-blue-200 transition-colors text-xs font-bold shadow-sm" title="支援・分析 (Alt+2)">
+        <Eye size={14} />
+        <span className="hidden sm:inline">支援・分析</span>
+        <kbd className="font-mono text-[10px] bg-white px-1 border border-blue-200 rounded shadow-sm text-slate-500">Alt+2</kbd>
+      </button>
+      <button onClick={onShowData} className="flex items-center gap-1.5 text-amber-700 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-200 transition-colors text-xs font-bold shadow-sm" title="データ管理 (Alt+3)">
+        <Database size={14} />
+        <span className="hidden sm:inline">データ管理</span>
+        <kbd className="font-mono text-[10px] bg-white px-1 border border-amber-200 rounded shadow-sm text-slate-500">Alt+3</kbd>
+      </button>
+      <button onClick={onShowHelp} className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg border border-emerald-200 transition-colors text-xs font-bold shadow-sm" title="キーボードショートカット一覧">
+        <Keyboard size={14} />
+        <kbd className="font-mono text-[10px] bg-white px-1 border border-emerald-200 rounded shadow-sm text-slate-500">F1</kbd>
+      </button>
+    </div>
   </nav>
 );
 
 const Footer = () => (
-  <footer className="w-full bg-white border-t border-slate-200 pt-3 pb-2 text-center text-sm text-slate-500 font-bold shadow-sm no-print relative z-10">
+  <footer className="w-full bg-white border-t border-slate-200 py-1 text-center text-xs text-slate-500 font-bold no-print relative z-10">
     <p>&copy; {new Date().getFullYear()} ノート見本作成ツール Developed by <a href="https://note.com/cute_borage86" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 hover:underline">GIGA山</a></p>
   </footer>
 );
@@ -223,7 +236,8 @@ const KeyboardHelpModal = ({ onClose }) => (
         <section>
           <h3 className="font-bold text-emerald-700 mb-3 border-b border-emerald-100 pb-1">🎛 タブ・設定切り替え</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6">
-            <div className="flex justify-between items-center"><span className="flex gap-1"><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">Alt</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">1</kbd> ~ <kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">3</kbd></span><span>メニュータブ切替</span></div>
+            <div className="flex justify-between items-center"><span className="flex gap-1"><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">Alt</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">2</kbd></span><span>支援・分析パネル</span></div>
+            <div className="flex justify-between items-center"><span className="flex gap-1"><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">Alt</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">3</kbd></span><span>データ管理パネル</span></div>
             <div className="flex justify-between items-center"><span className="flex gap-1"><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">Alt</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">D</kbd></span><span>縦書き/横書き 切替</span></div>
             <div className="flex justify-between items-center"><span className="flex gap-1"><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">Alt</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">H</kbd></span><span>ヘッダー表示 切替</span></div>
             <div className="flex justify-between items-center"><span className="flex gap-1"><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">Alt</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">←</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">→</kbd></span><span>ページを横スクロール</span></div>
@@ -251,6 +265,93 @@ const KeyboardHelpModal = ({ onClose }) => (
   </div>
 );
 
+// --- 支援・分析モーダル ---
+const SupportModal = ({ onClose, state, updateState }) => (
+  <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={onClose}>
+    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl">
+        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2"><Eye size={20} className="text-blue-600"/> 支援・分析</h2>
+        <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition-colors"><X size={20} /></button>
+      </div>
+      <div className="p-6 space-y-6 overflow-y-auto">
+        <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+          <h3 className="text-sm font-bold text-blue-800 mb-2 flex items-center gap-2"><Clock size={16}/> 学習時間の予測設定</h3>
+          <label className="block text-xs text-blue-700 mb-1 mt-3">対象の学年を選択</label>
+          <select value={state.grade} onChange={(e) => updateState('grade', parseInt(e.target.value))} className="w-full border-2 border-blue-200 rounded-xl p-2.5 text-sm outline-none focus:border-blue-500 bg-white">
+            {[1,2,3,4,5,6].map(g => <option key={g} value={g}>小学{g}年生 (約{WRITING_SPEEDS[g]}文字/分)</option>)}
+          </select>
+        </div>
+        <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+          <h3 className="text-sm font-bold text-emerald-800 mb-2 flex items-center gap-2"><Eye size={16}/> スキャフォールディング</h3>
+          <div className="space-y-2">
+            <label className={`flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all ${state.supportMode === 'normal' ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+              <input type="radio" name="support" checked={state.supportMode === 'normal'} onChange={() => updateState('supportMode', 'normal')} className="hidden"/>
+              <CheckCircle size={18} className={`mr-2 ${state.supportMode === 'normal' ? 'text-emerald-500' : 'text-slate-300'}`}/>
+              <span className="text-sm font-bold">通常表示</span>
+            </label>
+            <label className={`flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all ${state.supportMode === 'trace' ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+              <input type="radio" name="support" checked={state.supportMode === 'trace'} onChange={() => updateState('supportMode', 'trace')} className="hidden"/>
+              <Pencil size={18} className={`mr-2 ${state.supportMode === 'trace' ? 'text-emerald-500' : 'text-slate-300'}`}/>
+              <span className="text-sm font-bold">なぞり書き用 (薄文字)</span>
+            </label>
+            <label className={`flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all ${state.supportMode === 'fill' ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+              <input type="radio" name="support" checked={state.supportMode === 'fill'} onChange={() => updateState('supportMode', 'fill')} className="hidden"/>
+              <SquareDashed size={18} className={`mr-2 ${state.supportMode === 'fill' ? 'text-emerald-500' : 'text-slate-300'}`}/>
+              <span className="text-sm font-bold">穴埋め用 (漢字・カナ空欄)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div className="p-4 bg-slate-50 rounded-b-2xl border-t border-slate-200 text-center">
+        <button onClick={onClose} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-sm">閉じる</button>
+      </div>
+    </div>
+  </div>
+);
+
+// --- データ管理モーダル ---
+const DataModal = ({ onClose, savedNotes, saveCurrentNote, loadNote, deleteNote, exportData, fileInputRef, handleImport }) => (
+  <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={onClose}>
+    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl">
+        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2"><Database size={20} className="text-amber-600"/> データ管理</h2>
+        <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition-colors"><X size={20} /></button>
+      </div>
+      <div className="p-6 space-y-6 overflow-y-auto">
+        <button onClick={saveCurrentNote} className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md">
+          <Save size={18} /> 今の設定を保存 <kbd className="text-[10px] font-normal text-slate-400 ml-1">Ctrl+S</kbd>
+        </button>
+        <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+          <div className="bg-slate-200/50 px-3 py-2 text-xs font-bold text-slate-600 flex justify-between items-center">
+            <span>保存されたノート一覧</span><span className="bg-slate-300 text-slate-700 px-2 py-0.5 rounded-full">{savedNotes.length}件</span>
+          </div>
+          <ul className="max-h-48 overflow-y-auto divide-y divide-slate-200">
+            {savedNotes.length === 0 ? <li className="p-4 text-center text-xs text-slate-400">保存データはありません</li> : (
+              savedNotes.map(note => (
+                <li key={note.id} className="p-3 bg-white hover:bg-emerald-50 transition-colors flex justify-between items-center group">
+                  <div className="overflow-hidden cursor-pointer flex-1" onClick={() => loadNote(note.id)}>
+                    <p className="text-sm font-bold text-slate-700 truncate">{note.title}</p>
+                    <p className="text-[10px] text-slate-400">{new Date(note.date).toLocaleString()}</p>
+                  </div>
+                  <button onClick={() => deleteNote(note.id)} className="p-2 text-slate-300 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 ml-2" title="削除"><Trash2 size={16} /></button>
+                </li>
+              ))
+            )}
+          </ul>
+        </div>
+        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100">
+          <button onClick={exportData} className="flex flex-col items-center justify-center gap-1 p-3 bg-white border-2 border-slate-200 rounded-xl hover:border-emerald-700 hover:text-emerald-700 transition-colors text-slate-600 font-bold text-xs"><Download size={20} /> バックアップ出力</button>
+          <button onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center gap-1 p-3 bg-white border-2 border-slate-200 rounded-xl hover:border-emerald-700 hover:text-emerald-700 transition-colors text-slate-600 font-bold text-xs"><Upload size={20} /> バックアップ読込</button>
+          <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleImport} />
+        </div>
+      </div>
+      <div className="p-4 bg-slate-50 rounded-b-2xl border-t border-slate-200 text-center">
+        <button onClick={onClose} className="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all shadow-sm">閉じる</button>
+      </div>
+    </div>
+  </div>
+);
+
 // ==========================================
 // 4. メインアプリケーション
 // ==========================================
@@ -270,7 +371,6 @@ export default function App() {
   });
 
   const [savedNotes, setSavedNotes] = useLocalStorage('notebookToolSavedNotes', []);
-  const [activeTab, setActiveTab] = useState('basic');
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
   const previewScrollRef = useRef(null);
@@ -278,6 +378,8 @@ export default function App() {
   const [isExporting, setIsExporting] = useState(false);
   const [toast, setToast] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
+  const [showData, setShowData] = useState(false);
 
   // --- キーボードイベント用 最新State参照 ---
   const stateRef = useRef(state);
@@ -409,9 +511,9 @@ export default function App() {
         return;
       }
       
-      if (showHelp) {
-        if (e.key === 'Escape') setShowHelp(false);
-        return; 
+      if (showHelp || showSupport || showData) {
+        if (e.key === 'Escape') { setShowHelp(false); setShowSupport(false); setShowData(false); }
+        return;
       }
 
       // 保存・印刷・保存 (Ctrl / Cmd)
@@ -423,9 +525,8 @@ export default function App() {
 
       // タブ・トグル・スクロール操作 (Alt)
       if (e.altKey && !e.ctrlKey && !e.metaKey) {
-        if (e.key === '1') { e.preventDefault(); setActiveTab('basic'); return; }
-        if (e.key === '2') { e.preventDefault(); setActiveTab('support'); return; }
-        if (e.key === '3') { e.preventDefault(); setActiveTab('data'); return; }
+        if (e.key === '2') { e.preventDefault(); setShowSupport(prev => !prev); return; }
+        if (e.key === '3') { e.preventDefault(); setShowData(prev => !prev); return; }
         
         const currentIsGenko = TEMPLATES[stateRef.current.templateSelect]?.isGenko;
         if (e.key.toLowerCase() === 'd') {
@@ -469,185 +570,110 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showHelp, saveCurrentNote, handleDownloadPNG, updateState, insertTextAtCursor]);
+  }, [showHelp, showSupport, showData, saveCurrentNote, handleDownloadPNG, updateState, insertTextAtCursor]);
 
-  const TabButton = ({ id, icon: Icon, label }) => (
-    <button onClick={() => setActiveTab(id)} className={`flex-1 py-2 px-1 text-xs font-bold rounded-t-lg border-b-4 transition-all flex flex-col items-center gap-1 ${activeTab === id ? 'border-emerald-700 text-emerald-800 bg-emerald-50' : 'border-transparent text-slate-500 hover:bg-slate-50'}`}>
-      <Icon size={18} /> {label}
-    </button>
-  );
+  const [showMacroHelp, setShowMacroHelp] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-['Zen_Maru_Gothic']">
+    <div className="h-screen bg-slate-50 flex flex-col font-['Zen_Maru_Gothic'] overflow-hidden">
       <style>{globalStyles}</style>
       <style id="printPageStyle">{`@media print { @page { size: ${isLandscape ? 'A4 landscape' : 'A4 portrait'}; margin: 0; } }`}</style>
 
-      <Header onShowHelp={() => setShowHelp(true)} />
+      <Header onShowHelp={() => setShowHelp(true)} onShowSupport={() => setShowSupport(true)} onShowData={() => setShowData(true)} />
       {showHelp && <KeyboardHelpModal onClose={() => setShowHelp(false)} />}
+      {showSupport && <SupportModal onClose={() => setShowSupport(false)} state={state} updateState={updateState} />}
+      {showData && <DataModal onClose={() => setShowData(false)} savedNotes={savedNotes} saveCurrentNote={saveCurrentNote} loadNote={loadNote} deleteNote={deleteNote} exportData={exportData} fileInputRef={fileInputRef} handleImport={handleImport} />}
 
       <main className="flex flex-col md:flex-row flex-1 overflow-hidden relative">
-        <aside className="w-full md:w-80 lg:w-96 bg-white border-b md:border-b-0 md:border-r border-slate-200 flex flex-col flex-none h-[45vh] md:h-full no-print shadow-sm z-10">
-          
-          <div className="flex px-4 pt-4 border-b border-slate-200">
-            <TabButton id="basic" icon={Settings} label="基本設定" />
-            <TabButton id="support" icon={Eye} label="支援・分析" />
-            <TabButton id="data" icon={FolderOpen} label="データ管理" />
-          </div>
+        <aside className="w-full md:w-72 lg:w-80 bg-white border-b md:border-b-0 md:border-r border-slate-200 flex flex-col flex-none h-[40vh] md:h-full no-print shadow-sm z-10">
 
-          <div className="flex-1 overflow-y-auto p-5 space-y-6">
-            
-            {/* --- タブ1: 基本設定 --- */}
-            {activeTab === 'basic' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
-                <section>
-                  <label className="flex items-center justify-between text-sm font-bold text-slate-700 mb-2">
-                    <span className="flex items-center gap-2"><FileText size={16} className="text-emerald-600" /> 見本テキスト</span>
-                    <button onClick={() => setShowHelp(true)} className="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 hover:bg-emerald-100 transition-colors">マクロ一覧を見る</button>
-                  </label>
-                  <textarea ref={textareaRef} value={state.text} onChange={(e) => updateState('text', e.target.value)} rows={6} className="w-full border-2 border-slate-200 rounded-xl p-3 text-sm focus:ring-4 focus:ring-emerald-700/20 focus:border-emerald-700 outline-none transition-all resize-none shadow-inner bg-slate-50" placeholder="ここに板書計画を入力します..." />
-                </section>
-
-                <section className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
-                  <h3 className="text-sm font-bold text-emerald-800 mb-2 flex items-center gap-2">💡 PRO機能: 直感的な装飾操作</h3>
-                  <p className="text-xs text-emerald-700 leading-tight mb-2">
-                    右側の<b>プレビュー画面上の文字をマウスでなぞって選択</b>すると、簡単にサイドラインや赤文字の装飾ができます！
-                  </p>
-                  <ul className="text-xs text-emerald-800 space-y-1.5 list-disc pl-4">
-                    <li><span className="font-bold bg-white px-1 rounded shadow-sm text-slate-700">4/1</span> : 1マスに対角線で日付を配置</li>
-                    <li><span className="font-bold bg-white px-1 rounded shadow-sm text-slate-700">【め】</span> : ◯囲み文字 + <b>青枠</b>（空行まで）</li>
-                    <li><span className="font-bold bg-white px-1 rounded shadow-sm text-slate-700">【ま】</span> : ◯囲み文字 + <b>赤枠</b>（空行まで）</li>
-                    <li><span className="font-bold bg-white px-1 rounded shadow-sm text-emerald-700">【終】</span> : 枠囲みを途中で終わらせる</li>
-                  </ul>
-                </section>
-
-                <section className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                  <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-3"><LayoutTemplate size={16} className="text-emerald-600" /> テンプレート</label>
-                  <select value={state.templateSelect} onChange={handleTemplateChange} className="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm outline-none focus:border-emerald-700 transition-colors bg-white font-medium text-slate-700">
-                    {Object.entries(TEMPLATES).map(([key, tpl]) => (<option key={key} value={key}>{tpl.name}</option>))}
-                  </select>
-                </section>
-
-                <section className={`space-y-5 transition-opacity ${isGenko ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                  <div className="flex items-center justify-between">
-                     <label className="flex items-center gap-2 text-sm font-bold text-slate-700">ヘッダー(名前欄) <kbd className="text-[10px] font-normal text-slate-400 ml-1">Alt+H</kbd></label>
-                     <label className="relative inline-flex items-center cursor-pointer">
-                       <input type="checkbox" className="sr-only peer" checked={state.showHeader} onChange={(e) => handleCustomChange('showHeader', e.target.checked)} disabled={isGenko} />
-                       <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-700"></div>
-                     </label>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <label className={`border-2 rounded-xl p-2 text-center text-sm font-medium cursor-pointer transition-all ${state.direction === 'vertical' ? 'border-emerald-700 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
-                      <input type="radio" name="dir" value="vertical" className="hidden" checked={state.direction === 'vertical'} onChange={(e) => handleCustomChange('direction', e.target.value)} disabled={isGenko} />縦書き <kbd className="text-[10px] text-slate-400 ml-1">Alt+D</kbd>
-                    </label>
-                    <label className={`border-2 rounded-xl p-2 text-center text-sm font-medium cursor-pointer transition-all ${state.direction === 'horizontal' ? 'border-emerald-700 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
-                      <input type="radio" name="dir" value="horizontal" className="hidden" checked={state.direction === 'horizontal'} onChange={(e) => handleCustomChange('direction', e.target.value)} disabled={isGenko} />横書き
-                    </label>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-600 mb-1">1行のマス数</label>
-                      <input type="number" min="5" max="30" value={state.colsCount} onChange={(e) => handleCustomChange('colsCount', parseInt(e.target.value)||10)} disabled={isGenko} className="w-full border-2 border-slate-200 rounded-xl p-2 text-sm text-center outline-none focus:border-emerald-700" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-600 mb-1">行数</label>
-                      <input type="number" min="3" max="25" value={state.rowsCount} onChange={(e) => handleCustomChange('rowsCount', parseInt(e.target.value)||7)} disabled={isGenko} className="w-full border-2 border-slate-200 rounded-xl p-2 text-sm text-center outline-none focus:border-emerald-700" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-600 mb-1">マス目の種類</label>
-                    <select value={state.gridStyle} onChange={(e) => handleCustomChange('gridStyle', e.target.value)} disabled={isGenko} className="w-full border-2 border-slate-200 rounded-xl p-2.5 text-sm outline-none focus:border-emerald-700 transition-colors bg-white">
-                      <option value="style-leader">十字リーダーあり（緑）</option>
-                      <option value="style-grid">マス目のみ（緑）</option>
-                      <option value="style-none">枠線なし（白紙）</option>
-                    </select>
-                  </div>
-                </section>
-                
-                <section className="pt-4 border-t border-slate-100">
-                  <label className="flex items-center justify-between text-sm font-bold text-slate-700 mb-2">
-                    <span className="flex items-center gap-2"><Type size={16} className="text-emerald-600" /> 文字の大きさ</span>
-                    <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md text-xs">{state.fontSizeRatio}%</span>
-                  </label>
-                  <input type="range" min="30" max="100" value={state.fontSizeRatio} onChange={(e) => updateState('fontSizeRatio', parseInt(e.target.value))} className="w-full accent-emerald-700" />
-                </section>
-              </div>
-            )}
-
-            {/* --- タブ2: 支援・分析 --- */}
-            {activeTab === 'support' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
-                <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                  <h3 className="text-sm font-bold text-blue-800 mb-2 flex items-center gap-2"><Clock size={16}/> 学習時間の予測設定</h3>
-                  <label className="block text-xs text-blue-700 mb-1 mt-3">対象の学年を選択</label>
-                  <select value={state.grade} onChange={(e) => updateState('grade', parseInt(e.target.value))} className="w-full border-2 border-blue-200 rounded-xl p-2.5 text-sm outline-none focus:border-blue-500 bg-white">
-                    {[1,2,3,4,5,6].map(g => <option key={g} value={g}>小学{g}年生 (約{WRITING_SPEEDS[g]}文字/分)</option>)}
-                  </select>
-                </div>
-                <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
-                  <h3 className="text-sm font-bold text-emerald-800 mb-2 flex items-center gap-2"><Eye size={16}/> スキャフォールディング</h3>
-                  <div className="space-y-2">
-                    <label className={`flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all ${state.supportMode === 'normal' ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
-                      <input type="radio" name="support" checked={state.supportMode === 'normal'} onChange={() => updateState('supportMode', 'normal')} className="hidden"/>
-                      <CheckCircle size={18} className={`mr-2 ${state.supportMode === 'normal' ? 'text-emerald-500' : 'text-slate-300'}`}/>
-                      <span className="text-sm font-bold">通常表示</span>
-                    </label>
-                    <label className={`flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all ${state.supportMode === 'trace' ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
-                      <input type="radio" name="support" checked={state.supportMode === 'trace'} onChange={() => updateState('supportMode', 'trace')} className="hidden"/>
-                      <Pencil size={18} className={`mr-2 ${state.supportMode === 'trace' ? 'text-emerald-500' : 'text-slate-300'}`}/>
-                      <span className="text-sm font-bold">なぞり書き用 (薄文字)</span>
-                    </label>
-                    <label className={`flex items-center p-3 rounded-xl border-2 cursor-pointer transition-all ${state.supportMode === 'fill' ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
-                      <input type="radio" name="support" checked={state.supportMode === 'fill'} onChange={() => updateState('supportMode', 'fill')} className="hidden"/>
-                      <SquareDashed size={18} className={`mr-2 ${state.supportMode === 'fill' ? 'text-emerald-500' : 'text-slate-300'}`}/>
-                      <span className="text-sm font-bold">穴埋め用 (漢字・カナ空欄)</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* --- タブ3: データ管理 --- */}
-            {activeTab === 'data' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
-                <button onClick={saveCurrentNote} className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md">
-                  <Save size={18} /> 今の設定を保存 <kbd className="text-[10px] font-normal text-slate-400 ml-1">Ctrl+S</kbd>
+          <div className="flex-1 overflow-y-auto p-3 space-y-3">
+            {/* テキスト入力 */}
+            <section>
+              <label className="flex items-center justify-between text-xs font-bold text-slate-700 mb-1">
+                <span className="flex items-center gap-1.5"><FileText size={14} className="text-emerald-600" /> 見本テキスト</span>
+                <button onClick={() => setShowMacroHelp(prev => !prev)} className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 hover:bg-emerald-100 transition-colors flex items-center gap-0.5">
+                  <HelpCircle size={10} /> マクロ
                 </button>
-                <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
-                  <div className="bg-slate-200/50 px-3 py-2 text-xs font-bold text-slate-600 flex justify-between items-center">
-                    <span>保存されたノート一覧</span><span className="bg-slate-300 text-slate-700 px-2 py-0.5 rounded-full">{savedNotes.length}件</span>
+              </label>
+              {showMacroHelp && (
+                <div className="bg-emerald-50/80 p-2 rounded-lg border border-emerald-100 mb-1.5 text-[10px] text-emerald-800 space-y-0.5">
+                  <p className="font-bold text-emerald-700">プレビュー上の文字をなぞって装飾可能</p>
+                  <div className="grid grid-cols-2 gap-x-2">
+                    <span><b>4/1</b> 日付配置</span>
+                    <span><b>【め】</b> 青枠</span>
+                    <span><b>【ま】</b> 赤枠</span>
+                    <span><b>【終】</b> 枠終了</span>
                   </div>
-                  <ul className="max-h-48 overflow-y-auto divide-y divide-slate-200">
-                    {savedNotes.length === 0 ? <li className="p-4 text-center text-xs text-slate-400">保存データはありません</li> : (
-                      savedNotes.map(note => (
-                        <li key={note.id} className="p-3 bg-white hover:bg-emerald-50 transition-colors flex justify-between items-center group">
-                          <div className="overflow-hidden cursor-pointer flex-1" onClick={() => loadNote(note.id)}>
-                            <p className="text-sm font-bold text-slate-700 truncate">{note.title}</p>
-                            <p className="text-[10px] text-slate-400">{new Date(note.date).toLocaleString()}</p>
-                          </div>
-                          <button onClick={() => deleteNote(note.id)} className="p-2 text-slate-300 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 ml-2" title="削除"><Trash2 size={16} /></button>
-                        </li>
-                      ))
-                    )}
-                  </ul>
                 </div>
-                <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-100">
-                  <button onClick={exportData} className="flex flex-col items-center justify-center gap-1 p-3 bg-white border-2 border-slate-200 rounded-xl hover:border-emerald-700 hover:text-emerald-700 transition-colors text-slate-600 font-bold text-xs"><Download size={20} /> バックアップ出力</button>
-                  <button onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center gap-1 p-3 bg-white border-2 border-slate-200 rounded-xl hover:border-emerald-700 hover:text-emerald-700 transition-colors text-slate-600 font-bold text-xs"><Upload size={20} /> バックアップ読込</button>
-                  <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleImport} />
+              )}
+              <textarea ref={textareaRef} value={state.text} onChange={(e) => updateState('text', e.target.value)} rows={5} className="w-full border-2 border-slate-200 rounded-lg p-2 text-sm focus:ring-4 focus:ring-emerald-700/20 focus:border-emerald-700 outline-none transition-all resize-none shadow-inner bg-slate-50" placeholder="ここに板書計画を入力します..." />
+            </section>
+
+            {/* テンプレート */}
+            <section>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-1"><LayoutTemplate size={14} className="text-emerald-600" /> テンプレート</label>
+              <select value={state.templateSelect} onChange={handleTemplateChange} className="w-full border-2 border-slate-200 rounded-lg p-2 text-sm outline-none focus:border-emerald-700 transition-colors bg-white font-medium text-slate-700">
+                {Object.entries(TEMPLATES).map(([key, tpl]) => (<option key={key} value={key}>{tpl.name}</option>))}
+              </select>
+            </section>
+
+            {/* レイアウト設定 */}
+            <section className={`space-y-3 transition-opacity ${isGenko ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">ヘッダー <kbd className="text-[9px] font-normal text-slate-400">Alt+H</kbd></label>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={state.showHeader} onChange={(e) => handleCustomChange('showHeader', e.target.checked)} disabled={isGenko} />
+                  <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-700"></div>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5">
+                <label className={`border-2 rounded-lg py-1.5 text-center text-xs font-medium cursor-pointer transition-all ${state.direction === 'vertical' ? 'border-emerald-700 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+                  <input type="radio" name="dir" value="vertical" className="hidden" checked={state.direction === 'vertical'} onChange={(e) => handleCustomChange('direction', e.target.value)} disabled={isGenko} />縦書き
+                </label>
+                <label className={`border-2 rounded-lg py-1.5 text-center text-xs font-medium cursor-pointer transition-all ${state.direction === 'horizontal' ? 'border-emerald-700 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+                  <input type="radio" name="dir" value="horizontal" className="hidden" checked={state.direction === 'horizontal'} onChange={(e) => handleCustomChange('direction', e.target.value)} disabled={isGenko} />横書き
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 mb-0.5">1行のマス数</label>
+                  <input type="number" min="5" max="30" value={state.colsCount} onChange={(e) => handleCustomChange('colsCount', parseInt(e.target.value)||10)} disabled={isGenko} className="w-full border-2 border-slate-200 rounded-lg p-1.5 text-sm text-center outline-none focus:border-emerald-700" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 mb-0.5">行数</label>
+                  <input type="number" min="3" max="25" value={state.rowsCount} onChange={(e) => handleCustomChange('rowsCount', parseInt(e.target.value)||7)} disabled={isGenko} className="w-full border-2 border-slate-200 rounded-lg p-1.5 text-sm text-center outline-none focus:border-emerald-700" />
                 </div>
               </div>
-            )}
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-600 mb-0.5">マス目の種類</label>
+                <select value={state.gridStyle} onChange={(e) => handleCustomChange('gridStyle', e.target.value)} disabled={isGenko} className="w-full border-2 border-slate-200 rounded-lg p-1.5 text-sm outline-none focus:border-emerald-700 transition-colors bg-white">
+                  <option value="style-leader">十字リーダーあり（緑）</option>
+                  <option value="style-grid">マス目のみ（緑）</option>
+                  <option value="style-none">枠線なし（白紙）</option>
+                </select>
+              </div>
+            </section>
+
+            {/* 文字の大きさ */}
+            <section className="pt-2 border-t border-slate-100">
+              <label className="flex items-center justify-between text-xs font-bold text-slate-700 mb-1">
+                <span className="flex items-center gap-1.5"><Type size={14} className="text-emerald-600" /> 文字の大きさ</span>
+                <span className="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px]">{state.fontSizeRatio}%</span>
+              </label>
+              <input type="range" min="30" max="100" value={state.fontSizeRatio} onChange={(e) => updateState('fontSizeRatio', parseInt(e.target.value))} className="w-full accent-emerald-700" />
+            </section>
           </div>
 
-          <div className="mt-auto p-4 bg-slate-50 border-t border-slate-200 flex flex-col gap-2">
-            <button onClick={() => window.print()} disabled={isExporting} className="w-full bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm">
-              <Printer size={18} /> A4印刷・PDF保存 <kbd className="text-[10px] font-normal text-emerald-200 ml-1">Ctrl+P</kbd>
+          <div className="p-3 bg-slate-50 border-t border-slate-200 flex gap-2">
+            <button onClick={() => window.print()} disabled={isExporting} className="flex-1 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm text-xs">
+              <Printer size={15} /> 印刷・PDF <kbd className="text-[9px] font-normal text-emerald-200">Ctrl+P</kbd>
             </button>
-            <button onClick={handleDownloadPNG} disabled={isExporting} className="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm relative overflow-hidden">
-              {isExporting ? <><Loader2 size={18} className="animate-spin" /> 処理中...</> : <><Download size={18} /> 画像を保存 <kbd className="text-[10px] font-normal text-teal-200 ml-1">Ctrl+E</kbd></>}
+            <button onClick={handleDownloadPNG} disabled={isExporting} className="flex-1 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm text-xs relative overflow-hidden">
+              {isExporting ? <><Loader2 size={15} className="animate-spin" /> 処理中...</> : <><Download size={15} /> 画像保存 <kbd className="text-[9px] font-normal text-teal-200">Ctrl+E</kbd></>}
             </button>
           </div>
         </aside>
@@ -696,7 +722,7 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
       const parentWidth = parent.clientWidth;
       const parentHeight = parent.clientHeight;
       const paperHeightPx = (isLandscape ? 210 : 297) * 3.78;
-      const padding = window.innerWidth < 768 ? 16 : 32;
+      const padding = window.innerWidth < 768 ? 8 : 16;
 
       // 画面の高さにフィットさせるスケールを計算
       const scale = Math.min((parentHeight - padding) / paperHeightPx, 1);
@@ -861,15 +887,15 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-slate-100 relative">
-      <div className="bg-white border-b border-slate-200 px-4 py-2 flex justify-between items-center shadow-sm text-sm no-print z-20">
-        <div className="flex items-center gap-3 text-slate-700">
-          <div className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg border border-blue-100 font-medium">
-            <Clock size={16} /><span>小{state.grade} 推定書字時間:</span><span className="font-bold text-blue-800 text-base ml-1">{writingInfo.minutes}</span> 分<span className="text-xs opacity-70 ml-1">({writingInfo.count}文字)</span>
+      <div className="bg-white border-b border-slate-200 px-3 py-1 flex justify-between items-center shadow-sm text-xs no-print z-20">
+        <div className="flex items-center gap-2 text-slate-700">
+          <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md border border-blue-100 font-medium">
+            <Clock size={13} /><span>小{state.grade}</span><span className="font-bold text-blue-800 ml-1">{writingInfo.minutes}分</span><span className="opacity-70 ml-0.5">({writingInfo.count}文字)</span>
           </div>
         </div>
         <div className="relative" ref={alertRef}>
-          <button onClick={() => setShowAlerts(!showAlerts)} className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border font-bold transition-colors ${alerts.length > 0 ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-200 cursor-default'}`}>
-            {alerts.length > 0 ? <AlertTriangle size={16} /> : <CheckCircle size={16} />} レイアウト警告: {alerts.length}件
+          <button onClick={() => setShowAlerts(!showAlerts)} className={`flex items-center gap-1 px-2 py-0.5 rounded-md border font-bold transition-colors text-xs ${alerts.length > 0 ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-200 cursor-default'}`}>
+            {alerts.length > 0 ? <AlertTriangle size={13} /> : <CheckCircle size={13} />} 警告: {alerts.length}件
           </button>
           {showAlerts && alerts.length > 0 && (
             <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 shadow-xl rounded-xl p-3 z-50">
@@ -882,7 +908,7 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
         </div>
       </div>
 
-      <div className="flex-1 overflow-x-auto overflow-y-hidden flex items-center print-area relative" style={{ padding: '16px' }} onMouseDown={handlePreviewClick} ref={scrollRef}>
+      <div className="flex-1 overflow-x-auto overflow-y-hidden flex items-center print-area relative" style={{ padding: '8px' }} onMouseDown={handlePreviewClick} ref={scrollRef}>
         <div id="scaleWrapper" ref={wrapperRef} style={{
           transformOrigin: 'top left',
           display: 'flex',
