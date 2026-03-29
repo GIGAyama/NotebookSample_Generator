@@ -1059,8 +1059,8 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
         <div className={`cell ${className}`} style={style} {...interactiveProps}>
           {borderClass && <div className={borderClass} />}
           {isSelected && <div className="absolute inset-0 bg-emerald-500/20 z-30 pointer-events-none" />}
-          {/* 左下から右上（／）の斜線に変更 */}
-          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(to top right, transparent 48%, rgba(0,0,0,0.3) 48.5%, rgba(0,0,0,0.3) 51.5%, transparent 52%)' }} />
+          {/* 右上と左下を結ぶ（／）の斜線 */}
+          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(to bottom right, transparent 48%, rgba(0,0,0,0.3) 48.5%, rgba(0,0,0,0.3) 51.5%, transparent 52%)' }} />
           <span className="absolute top-[8%] left-[8%] text-[0.6em] font-bold leading-none pointer-events-none">{month}</span>
           <span className="absolute bottom-[8%] right-[8%] text-[0.6em] font-bold leading-none pointer-events-none">{day}</span>
         </div>
