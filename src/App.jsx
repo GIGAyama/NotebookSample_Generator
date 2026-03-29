@@ -1056,6 +1056,7 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
 
   if (type === 'normal') {
       const chars = Array.from(content);
+      const isMultiDigit = content.length >= 2 && /^\d+$/.test(content);
       const hasPunctuation = chars.some(c => PUNCTUATION_CHARS.includes(c));
 
       let lineElement = null;
@@ -1069,12 +1070,32 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
         }
       }
 
+      // 複数桁の半角数字は1マスにまとめて表示
+      if (isMultiDigit) {
+        let cClass = 'cell-content absolute inset-0 flex items-center justify-center';
+        if (textColor === 'red') cClass += ' text-red-600 font-bold';
+        if (isVertical) cClass += ' rotate-90';
+        const supportClass = applySupport(content);
+        let dispContent = content;
+        if (supportMode === 'fill' && supportClass === 'opacity-0') dispContent = '';
+        else if (supportClass) cClass += ` ${supportClass}`;
+        const fontSize = content.length === 2 ? '0.65em' : content.length === 3 ? '0.5em' : '0.4em';
+        return (
+          <div className={`cell ${className}`} style={style} {...interactiveProps}>
+            {borderClass && <div className={borderClass} />}
+            {lineElement}
+            {isSelected && <div className="absolute inset-0 bg-emerald-500/20 z-30 pointer-events-none" />}
+            {dispContent && <span className={cClass} style={{ fontSize }}>{dispContent}</span>}
+          </div>
+        );
+      }
+
       return (
         <div className={`cell ${className}`} style={style} {...interactiveProps}>
           {borderClass && <div className={borderClass} />}
           {lineElement}
           {isSelected && <div className="absolute inset-0 bg-emerald-500/20 z-30 pointer-events-none" />}
-          
+
           {chars.map((c, i) => {
             let cContent = c;
             let cClass = 'cell-content ';
@@ -1082,7 +1103,7 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
             const isOpenBracket = OPEN_BRACKETS.includes(c);
             const isCloseBracket = CLOSE_BRACKETS.includes(c);
             const isRotateChar = VERTICAL_ROTATE_CHARS.includes(c);
-            
+
             if (isPunct) cClass += 'punctuation ' + (isVertical ? 'is-vertical' : 'is-horizontal');
             else if (isVertical && isOpenBracket) cClass += 'bracket-open-v';
             else if (isVertical && isCloseBracket) cClass += hasPunctuation ? 'bracket-close-v-bottom' : 'bracket-close-v-top';
@@ -1090,7 +1111,7 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
               cClass += 'absolute inset-0 flex items-center justify-center';
               if (isVertical && isRotateChar) cClass += ' rotate-90';
             }
-            
+
             // 文字色の適用
             if (textColor === 'red') {
               cClass += ' text-red-600 font-bold';
@@ -1163,7 +1184,7 @@ function useParsedText(text, cellsPerLine, maxLines, direction) {
       }
 
       let currentLineCells = [];
-      const tokens = line.match(/(【[めも問じ自ま終]】|【[黒赤青]線】|【線終】|【赤字】|【字終】|\d{1,2}\/\d{1,2}|[\s\S])/g) || [];
+      const tokens = line.match(/(【[めも問じ自ま終]】|【[黒赤青]線】|【線終】|【赤字】|【字終】|\d{1,2}\/\d{1,2}|\d{2,}|[\s\S])/g) || [];
       
       for (let i = 0; i < tokens.length; i++) {
         let token = tokens[i];
