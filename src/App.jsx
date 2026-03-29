@@ -114,8 +114,8 @@ const globalStyles = `
   @media print {
     body, html { background-color: white !important; margin: 0; padding: 0; }
     .no-print { display: none !important; }
-    .print-area { width: 100% !important; padding: 0 !important; margin: 0 !important; background: white !important; overflow: visible !important; }
-    #scaleWrapper { transform: none !important; margin: 0 !important; flex-direction: column !important; gap: 0 !important; direction: ltr !important; }
+    .print-area { width: 100% !important; padding: 0 !important; margin: 0 !important; background: white !important; overflow: visible !important; height: auto !important; max-height: none !important; display: block !important; }
+    #scaleWrapper { transform: none !important; margin: 0 !important; flex-direction: column !important; gap: 0 !important; direction: ltr !important; display: block !important; width: 100% !important; height: auto !important; }
     .a4-paper { box-shadow: none !important; margin: 0 !important; border: none !important; page-break-after: always; break-after: page; }
     .a4-paper:last-child { page-break-after: auto; break-after: auto; }
   }
