@@ -1074,7 +1074,6 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
       if (isMultiDigit) {
         let cClass = 'cell-content absolute inset-0 flex items-center justify-center';
         if (textColor === 'red') cClass += ' text-red-600 font-bold';
-        if (isVertical) cClass += ' rotate-90';
         const supportClass = applySupport(content);
         let dispContent = content;
         if (supportMode === 'fill' && supportClass === 'opacity-0') dispContent = '';
