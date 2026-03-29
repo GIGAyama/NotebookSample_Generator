@@ -832,10 +832,40 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
     const before = state.text.substring(0, minIdx);
     const middle = state.text.substring(minIdx, maxIdx);
     const after = state.text.substring(maxIdx);
-    
+
     const cleanMiddle = middle.replace(/【[黒赤青]線】|【線終】|【赤字】|【字終】/g, '');
-    const newText = before + cleanMiddle + after;
-    
+
+    // before側で開いたままの装飾タグを閉じる（選択範囲に色が漏れないようにする）
+    const getActiveFormatting = (t) => {
+      let textColor = null, lineColor = null;
+      const tags = t.match(/【[黒赤青]線】|【線終】|【赤字】|【字終】/g) || [];
+      for (const tag of tags) {
+        if (tag === '【赤字】') textColor = 'red';
+        else if (tag === '【字終】') textColor = null;
+        else if (tag === '【黒線】') lineColor = 'black';
+        else if (tag === '【赤線】') lineColor = 'red';
+        else if (tag === '【青線】') lineColor = 'blue';
+        else if (tag === '【線終】') lineColor = null;
+      }
+      return { textColor, lineColor };
+    };
+
+    const beforeState = getActiveFormatting(before);
+    const afterState = getActiveFormatting(before + middle);
+
+    let closingTags = '';
+    if (beforeState.textColor) closingTags += '【字終】';
+    if (beforeState.lineColor) closingTags += '【線終】';
+
+    let reopeningTags = '';
+    if (afterState.textColor === 'red') reopeningTags += '【赤字】';
+    if (afterState.lineColor) {
+      const lineTagMap = { black: '【黒線】', red: '【赤線】', blue: '【青線】' };
+      reopeningTags += lineTagMap[afterState.lineColor];
+    }
+
+    const newText = before + closingTags + cleanMiddle + reopeningTags + after;
+
     updateState('text', newText);
     setSelectionStart(null);
     setSelectionEnd(null);
