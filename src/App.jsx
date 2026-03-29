@@ -307,6 +307,11 @@ export default function App() {
 
   const handleCustomChange = (key, value) => setState(prev => ({ ...prev, [key]: value, templateSelect: 'custom' }));
   const isGenko = TEMPLATES[state.templateSelect]?.isGenko;
+  const isLandscape = isGenko || (() => {
+    const gridCols = state.direction === 'horizontal' ? state.colsCount : state.rowsCount;
+    const gridRows = state.direction === 'horizontal' ? state.rowsCount : state.colsCount;
+    return gridCols > gridRows;
+  })();
 
   const saveCurrentNote = useCallback(() => {
     const currentState = stateRef.current;
@@ -475,7 +480,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-['Zen_Maru_Gothic']">
       <style>{globalStyles}</style>
-      <style id="printPageStyle">{`@media print { @page { size: ${isGenko ? 'A4 landscape' : 'A4 portrait'}; margin: 0; } }`}</style>
+      <style id="printPageStyle">{`@media print { @page { size: ${isLandscape ? 'A4 landscape' : 'A4 portrait'}; margin: 0; } }`}</style>
 
       <Header onShowHelp={() => setShowHelp(true)} />
       {showHelp && <KeyboardHelpModal onClose={() => setShowHelp(false)} />}
@@ -647,7 +652,7 @@ export default function App() {
           </div>
         </aside>
 
-        <PreviewArea state={state} updateState={updateState} isGenko={isGenko} scrollRef={previewScrollRef} />
+        <PreviewArea state={state} updateState={updateState} isGenko={isGenko} isLandscape={isLandscape} scrollRef={previewScrollRef} />
 
         {toast && (
           <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
@@ -668,7 +673,7 @@ export default function App() {
 // 5. プレビュー＆解析エンジン＆直感的操作UI
 // ==========================================
 
-const PreviewArea = ({ state, updateState, isGenko, scrollRef }) => {
+const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) => {
   const wrapperRef = useRef(null);
   const alertRef = useRef(null);
 
@@ -687,9 +692,9 @@ const PreviewArea = ({ state, updateState, isGenko, scrollRef }) => {
       if(!parent) return;
       
       const wrapperWidth = parent.clientWidth;
-      const paperWidth = (isGenko ? 297 : 210) * 3.78;
-      const padding = window.innerWidth < 768 ? 20 : 60; 
-      
+      const paperWidth = (isLandscape ? 297 : 210) * 3.78;
+      const padding = window.innerWidth < 768 ? 20 : 60;
+
       if (wrapperWidth < paperWidth + padding) {
         const scale = (wrapperWidth - padding) / paperWidth;
         const unscaledHeight = wrapperRef.current.offsetHeight;
@@ -702,7 +707,7 @@ const PreviewArea = ({ state, updateState, isGenko, scrollRef }) => {
     adjustScale();
     const initialTimer = setTimeout(adjustScale, 50);
     return () => { window.removeEventListener('resize', handleResize); clearTimeout(timeoutId); clearTimeout(initialTimer); };
-  }, [state, isGenko]);
+  }, [state, isLandscape]);
 
   useEffect(() => {
     const handleClickOutside = (event) => { if (alertRef.current && !alertRef.current.contains(event.target)) setShowAlerts(false); };
@@ -856,7 +861,7 @@ const PreviewArea = ({ state, updateState, isGenko, scrollRef }) => {
         <div id="scaleWrapper" ref={wrapperRef} style={{ transformOrigin: 'top center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {isGenko 
             ? <GenkoPaper state={state} pages={pages} onCellMouseDown={handleCellMouseDown} onCellMouseEnter={handleCellMouseEnter} selectedRange={selectedRange} /> 
-            : <NormalPaper state={state} pages={pages} onCellMouseDown={handleCellMouseDown} onCellMouseEnter={handleCellMouseEnter} selectedRange={selectedRange} />}
+            : <NormalPaper state={state} pages={pages} isLandscape={isLandscape} onCellMouseDown={handleCellMouseDown} onCellMouseEnter={handleCellMouseEnter} selectedRange={selectedRange} />}
         </div>
       </div>
 
@@ -896,10 +901,10 @@ const PreviewArea = ({ state, updateState, isGenko, scrollRef }) => {
 // 6. 用紙・セル描画コンポーネント
 // ==========================================
 
-const NormalPaper = ({ state, pages, onCellMouseDown, onCellMouseEnter, selectedRange }) => {
+const NormalPaper = ({ state, pages, isLandscape, onCellMouseDown, onCellMouseEnter, selectedRange }) => {
   const { colsCount, rowsCount, direction, showHeader, gridStyle, fontSizeRatio, supportMode } = state;
   const fontRatio = fontSizeRatio / 100;
-  const AVAIL_W_MM = 170; const AVAIL_H_MM = showHeader ? (257 - 35) : 257;
+  const AVAIL_W_MM = isLandscape ? 257 : 170; const AVAIL_H_MM = isLandscape ? (showHeader ? (170 - 35) : 170) : (showHeader ? (257 - 35) : 257);
   const gridCols = direction === 'horizontal' ? colsCount : rowsCount;
   const gridRows = direction === 'horizontal' ? rowsCount : colsCount;
   const cellSizeMM = Math.floor(Math.min(AVAIL_W_MM / gridCols, AVAIL_H_MM / gridRows) * 10) / 10;
@@ -908,7 +913,7 @@ const NormalPaper = ({ state, pages, onCellMouseDown, onCellMouseEnter, selected
   return (
     <>
       {pages.map((pageData, pageIdx) => (
-        <div key={pageIdx} className="a4-paper">
+        <div key={pageIdx} className={`a4-paper${isLandscape ? ' a4-landscape' : ''}`}>
           {showHeader && (
             <div className="notebook-header">
               <div className="header-item"><span className="header-label">月</span><div className="header-line header-date"></div><span className="header-label ml-2">日</span><div className="header-line header-date"></div></div>
