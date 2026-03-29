@@ -25,7 +25,7 @@ const globalStyles = `
     height: 297mm;
     background-color: white;
     box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-    margin: 0 auto 2rem auto;
+    margin: 0;
     position: relative;
     padding: 20mm;
     box-sizing: border-box;
@@ -113,8 +113,8 @@ const globalStyles = `
   @media print {
     body, html { background-color: white !important; margin: 0; padding: 0; }
     .no-print { display: none !important; }
-    .print-area { width: 100% !important; padding: 0 !important; margin: 0 !important; background: white !important; }
-    #scaleWrapper { transform: none !important; margin: 0 !important; }
+    .print-area { width: 100% !important; padding: 0 !important; margin: 0 !important; background: white !important; overflow: visible !important; }
+    #scaleWrapper { transform: none !important; margin: 0 !important; flex-direction: column !important; gap: 0 !important; direction: ltr !important; }
     .a4-paper { box-shadow: none !important; margin: 0 !important; border: none !important; page-break-after: always; break-after: page; }
     .a4-paper:last-child { page-break-after: auto; break-after: auto; }
   }
@@ -226,7 +226,7 @@ const KeyboardHelpModal = ({ onClose }) => (
             <div className="flex justify-between items-center"><span className="flex gap-1"><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">Alt</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">1</kbd> ~ <kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">3</kbd></span><span>メニュータブ切替</span></div>
             <div className="flex justify-between items-center"><span className="flex gap-1"><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">Alt</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">D</kbd></span><span>縦書き/横書き 切替</span></div>
             <div className="flex justify-between items-center"><span className="flex gap-1"><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">Alt</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">H</kbd></span><span>ヘッダー表示 切替</span></div>
-            <div className="flex justify-between items-center"><span className="flex gap-1"><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">Alt</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">↑</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">↓</kbd></span><span>プレビューをスクロール</span></div>
+            <div className="flex justify-between items-center"><span className="flex gap-1"><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">Alt</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">←</kbd><kbd className="bg-slate-100 border border-slate-300 rounded px-2 py-0.5 shadow-sm text-xs font-mono">→</kbd></span><span>ページを横スクロール</span></div>
           </div>
         </section>
 
@@ -307,6 +307,11 @@ export default function App() {
 
   const handleCustomChange = (key, value) => setState(prev => ({ ...prev, [key]: value, templateSelect: 'custom' }));
   const isGenko = TEMPLATES[state.templateSelect]?.isGenko;
+  const isLandscape = isGenko || (() => {
+    const gridCols = state.direction === 'horizontal' ? state.colsCount : state.rowsCount;
+    const gridRows = state.direction === 'horizontal' ? state.rowsCount : state.colsCount;
+    return gridCols > gridRows;
+  })();
 
   const saveCurrentNote = useCallback(() => {
     const currentState = stateRef.current;
@@ -438,14 +443,14 @@ export default function App() {
           }
           return;
         }
-        if (e.key === 'ArrowDown') {
+        if (e.key === 'ArrowRight') {
           e.preventDefault();
-          if (previewScrollRef.current) previewScrollRef.current.scrollBy({ top: 150, behavior: 'smooth' });
+          if (previewScrollRef.current) previewScrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
           return;
         }
-        if (e.key === 'ArrowUp') {
+        if (e.key === 'ArrowLeft') {
           e.preventDefault();
-          if (previewScrollRef.current) previewScrollRef.current.scrollBy({ top: -150, behavior: 'smooth' });
+          if (previewScrollRef.current) previewScrollRef.current.scrollBy({ left: -300, behavior: 'smooth' });
           return;
         }
       }
@@ -475,7 +480,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-['Zen_Maru_Gothic']">
       <style>{globalStyles}</style>
-      <style id="printPageStyle">{`@media print { @page { size: ${isGenko ? 'A4 landscape' : 'A4 portrait'}; margin: 0; } }`}</style>
+      <style id="printPageStyle">{`@media print { @page { size: ${isLandscape ? 'A4 landscape' : 'A4 portrait'}; margin: 0; } }`}</style>
 
       <Header onShowHelp={() => setShowHelp(true)} />
       {showHelp && <KeyboardHelpModal onClose={() => setShowHelp(false)} />}
@@ -647,7 +652,7 @@ export default function App() {
           </div>
         </aside>
 
-        <PreviewArea state={state} updateState={updateState} isGenko={isGenko} scrollRef={previewScrollRef} />
+        <PreviewArea state={state} updateState={updateState} isGenko={isGenko} isLandscape={isLandscape} scrollRef={previewScrollRef} />
 
         {toast && (
           <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
@@ -668,7 +673,7 @@ export default function App() {
 // 5. プレビュー＆解析エンジン＆直感的操作UI
 // ==========================================
 
-const PreviewArea = ({ state, updateState, isGenko, scrollRef }) => {
+const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) => {
   const wrapperRef = useRef(null);
   const alertRef = useRef(null);
 
@@ -681,34 +686,58 @@ const PreviewArea = ({ state, updateState, isGenko, scrollRef }) => {
     let timeoutId;
     const adjustScale = () => {
       if (!wrapperRef.current) return;
-      if (window.matchMedia('print').matches) { wrapperRef.current.style.transform = 'scale(1)'; wrapperRef.current.style.marginBottom = '0px'; return; }
-      wrapperRef.current.style.transform = 'scale(1)'; wrapperRef.current.style.marginBottom = '0px';
+      if (window.matchMedia('print').matches) { wrapperRef.current.style.transform = 'scale(1)'; wrapperRef.current.style.width = ''; wrapperRef.current.style.height = ''; return; }
+      wrapperRef.current.style.transform = 'scale(1)';
+      wrapperRef.current.style.width = '';
+      wrapperRef.current.style.height = '';
       const parent = wrapperRef.current.parentElement;
       if(!parent) return;
-      
-      const wrapperWidth = parent.clientWidth;
-      const paperWidth = (isGenko ? 297 : 210) * 3.78;
-      const padding = window.innerWidth < 768 ? 20 : 60; 
-      
-      if (wrapperWidth < paperWidth + padding) {
-        const scale = (wrapperWidth - padding) / paperWidth;
-        const unscaledHeight = wrapperRef.current.offsetHeight;
-        wrapperRef.current.style.transform = `scale(${scale})`;
-        wrapperRef.current.style.marginBottom = `-${unscaledHeight * (1 - scale)}px`;
-      }
+
+      const parentHeight = parent.clientHeight;
+      const paperHeightPx = (isLandscape ? 210 : 297) * 3.78;
+      const padding = window.innerWidth < 768 ? 16 : 32;
+
+      // 画面の高さにフィットさせるスケールを計算
+      const scale = Math.min((parentHeight - padding) / paperHeightPx, 1);
+
+      // スケール後の実サイズを設定（スクロール領域を正しく計算させるため）
+      const unscaledW = wrapperRef.current.scrollWidth;
+      const unscaledH = wrapperRef.current.scrollHeight;
+      const scaledW = unscaledW * scale;
+      const scaledH = unscaledH * scale;
+      wrapperRef.current.style.transform = `scale(${scale})`;
+      wrapperRef.current.style.width = `${scaledW}px`;
+      wrapperRef.current.style.height = `${scaledH}px`;
+      wrapperRef.current.style.transformOrigin = 'top left';
+      // 1ページの場合は中央寄せ
+      wrapperRef.current.style.margin = scaledW < parentWidth ? '0 auto' : '0';
     };
     const handleResize = () => { clearTimeout(timeoutId); timeoutId = setTimeout(adjustScale, 50); };
     window.addEventListener('resize', handleResize);
     adjustScale();
     const initialTimer = setTimeout(adjustScale, 50);
     return () => { window.removeEventListener('resize', handleResize); clearTimeout(timeoutId); clearTimeout(initialTimer); };
-  }, [state, isGenko]);
+  }, [state, isLandscape]);
 
   useEffect(() => {
     const handleClickOutside = (event) => { if (alertRef.current && !alertRef.current.contains(event.target)) setShowAlerts(false); };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // --- マウスホイールで横スクロール ---
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const handleWheel = (e) => {
+      if (el.scrollWidth <= el.clientWidth) return;
+      e.preventDefault();
+      const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      el.scrollBy({ left: delta, behavior: 'smooth' });
+    };
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [scrollRef]);
 
   // --- マウスによる直感的なセル選択ロジック ---
   useEffect(() => {
@@ -852,11 +881,18 @@ const PreviewArea = ({ state, updateState, isGenko, scrollRef }) => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center items-start print-area relative" onMouseDown={handlePreviewClick} ref={scrollRef}>
-        <div id="scaleWrapper" ref={wrapperRef} style={{ transformOrigin: 'top center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          {isGenko 
-            ? <GenkoPaper state={state} pages={pages} onCellMouseDown={handleCellMouseDown} onCellMouseEnter={handleCellMouseEnter} selectedRange={selectedRange} /> 
-            : <NormalPaper state={state} pages={pages} onCellMouseDown={handleCellMouseDown} onCellMouseEnter={handleCellMouseEnter} selectedRange={selectedRange} />}
+      <div className="flex-1 overflow-x-auto overflow-y-hidden flex items-center print-area relative" style={{ padding: '16px' }} onMouseDown={handlePreviewClick} ref={scrollRef}>
+        <div id="scaleWrapper" ref={wrapperRef} style={{
+          transformOrigin: 'top left',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          gap: '24px',
+          direction: state.direction === 'vertical' ? 'rtl' : 'ltr',
+        }}>
+          {isGenko
+            ? <GenkoPaper state={state} pages={pages} onCellMouseDown={handleCellMouseDown} onCellMouseEnter={handleCellMouseEnter} selectedRange={selectedRange} />
+            : <NormalPaper state={state} pages={pages} isLandscape={isLandscape} onCellMouseDown={handleCellMouseDown} onCellMouseEnter={handleCellMouseEnter} selectedRange={selectedRange} />}
         </div>
       </div>
 
@@ -896,10 +932,10 @@ const PreviewArea = ({ state, updateState, isGenko, scrollRef }) => {
 // 6. 用紙・セル描画コンポーネント
 // ==========================================
 
-const NormalPaper = ({ state, pages, onCellMouseDown, onCellMouseEnter, selectedRange }) => {
+const NormalPaper = ({ state, pages, isLandscape, onCellMouseDown, onCellMouseEnter, selectedRange }) => {
   const { colsCount, rowsCount, direction, showHeader, gridStyle, fontSizeRatio, supportMode } = state;
   const fontRatio = fontSizeRatio / 100;
-  const AVAIL_W_MM = 170; const AVAIL_H_MM = showHeader ? (257 - 35) : 257;
+  const AVAIL_W_MM = isLandscape ? 257 : 170; const AVAIL_H_MM = isLandscape ? (showHeader ? (170 - 35) : 170) : (showHeader ? (257 - 35) : 257);
   const gridCols = direction === 'horizontal' ? colsCount : rowsCount;
   const gridRows = direction === 'horizontal' ? rowsCount : colsCount;
   const cellSizeMM = Math.floor(Math.min(AVAIL_W_MM / gridCols, AVAIL_H_MM / gridRows) * 10) / 10;
@@ -908,7 +944,7 @@ const NormalPaper = ({ state, pages, onCellMouseDown, onCellMouseEnter, selected
   return (
     <>
       {pages.map((pageData, pageIdx) => (
-        <div key={pageIdx} className="a4-paper">
+        <div key={pageIdx} className={`a4-paper${isLandscape ? ' a4-landscape' : ''}`} style={{ direction: 'ltr' }}>
           {showHeader && (
             <div className="notebook-header">
               <div className="header-item"><span className="header-label">月</span><div className="header-line header-date"></div><span className="header-label ml-2">日</span><div className="header-line header-date"></div></div>
@@ -937,7 +973,7 @@ const GenkoPaper = ({ state, pages, onCellMouseDown, onCellMouseEnter, selectedR
   return (
     <>
       {pages.map((pageData, pIdx) => (
-        <div key={pIdx} className="a4-paper a4-landscape" style={{ padding: '3mm 5mm 5mm 5mm' }}>
+        <div key={pIdx} className="a4-paper a4-landscape" style={{ padding: '3mm 5mm 5mm 5mm', direction: 'ltr' }}>
           <div className="genko-container">
             <div className="genko-header"><div className="header-cell-title">題名</div><div className="header-cell-name">名前</div></div>
             <div className="genko-grid-wrapper">
