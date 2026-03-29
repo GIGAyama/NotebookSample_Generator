@@ -1074,7 +1074,6 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
       if (isMultiDigit) {
         let cClass = 'cell-content absolute inset-0 flex items-center justify-center';
         if (textColor === 'red') cClass += ' text-red-600 font-bold';
-        if (isVertical) cClass += ' rotate-90';
         const supportClass = applySupport(content);
         let dispContent = content;
         if (supportMode === 'fill' && supportClass === 'opacity-0') dispContent = '';
@@ -1109,7 +1108,6 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
             else if (isVertical && isCloseBracket) cClass += hasPunctuation ? 'bracket-close-v-bottom' : 'bracket-close-v-top';
             else {
               cClass += 'absolute inset-0 flex items-center justify-center';
-              if (isVertical && isRotateChar) cClass += ' rotate-90';
             }
 
             // 文字色の適用
@@ -1121,7 +1119,8 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
             if(supportMode === 'fill' && supportClass === 'opacity-0' && !isPunct) cContent = '';
             else if(supportClass) cClass += ` ${supportClass}`;
 
-            return cContent ? <span key={i} className={cClass}>{cContent}</span> : null;
+            const charStyle = (isVertical && isRotateChar) ? { transform: 'rotate(90deg)' } : undefined;
+            return cContent ? <span key={i} className={cClass} style={charStyle}>{cContent}</span> : null;
           })}
         </div>
       );
