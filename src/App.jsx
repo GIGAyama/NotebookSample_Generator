@@ -113,6 +113,7 @@ const globalStyles = `
 
   @media print {
     body, html { background-color: white !important; margin: 0; padding: 0; }
+    #root, #root > div { height: auto !important; overflow: visible !important; display: block !important; }
     .no-print { display: none !important; }
     main { overflow: visible !important; height: auto !important; display: block !important; }
     .print-area { width: 100% !important; padding: 0 !important; margin: 0 !important; background: white !important; overflow: visible !important; height: auto !important; max-height: none !important; display: block !important; }
