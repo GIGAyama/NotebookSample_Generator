@@ -693,6 +693,7 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
       const parent = wrapperRef.current.parentElement;
       if(!parent) return;
 
+      const parentWidth = parent.clientWidth;
       const parentHeight = parent.clientHeight;
       const paperHeightPx = (isLandscape ? 210 : 297) * 3.78;
       const padding = window.innerWidth < 768 ? 16 : 32;
