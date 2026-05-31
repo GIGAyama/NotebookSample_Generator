@@ -949,6 +949,7 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
           flexDirection: 'row',
           alignItems: 'flex-start',
           gap: '24px',
+          flexShrink: 0,
           direction: state.direction === 'vertical' ? 'rtl' : 'ltr',
         }}>
           {isGenko
