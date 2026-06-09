@@ -614,11 +614,11 @@ export default function App() {
                     <span><b>【○3】</b> 丸に数字</span>
                     <span><b>【穴】〜【穴終】</b> 穴埋め</span>
                     <span><b>【枠】〜【枠終】</b> 黒枠で囲む</span>
-                    <span><b>【縦】〜【縦終】</b> 縦の補助線</span>
-                    <span><b>【横】〜【横終】</b> 横の補助線</span>
+                    <span><b>【左】【右】</b> 左右の縦線</span>
+                    <span><b>【上】【下】</b> 上下の横線</span>
                   </div>
-                  <p className="pt-0.5 text-emerald-700">なぞって出るバーの「枠線」から □囲み・│縦線・─横線 を選べます</p>
-                  <p className="text-emerald-700">空白（スペース）を選んで囲めば図形に、マスを縦/横に選んで線を引けばノートを構造的に区切れます</p>
+                  <p className="pt-0.5 text-emerald-700">なぞって出るバーの「枠線」から □囲み・左/右の縦線・上/下の横線 を選べます</p>
+                  <p className="text-emerald-700">1マスから選択でき、片側だけに太い黒線を引いてノートを構造的に区切れます</p>
                 </div>
               )}
               <textarea ref={textareaRef} value={state.text} onChange={(e) => updateState('text', e.target.value)} rows={5} className="w-full border-2 border-slate-200 rounded-lg p-2 text-sm focus:ring-4 focus:ring-emerald-700/20 focus:border-emerald-700 outline-none transition-all resize-none shadow-inner bg-slate-50" placeholder="ここに板書計画を入力します..." />
@@ -846,7 +846,7 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
 
     // 中身は素の文字だけにする（装飾・穴・既存図形を取り除く）
     const inner = middle
-      .replace(/【穴】|【穴終】|【枠】|【枠終】|【縦】|【縦終】|【横】|【横終】|【[黒赤青]線】|【線終】|【赤字】|【字終】/g, '')
+      .replace(/【穴】|【穴終】|【枠】|【枠終】|【左】|【左終】|【右】|【右終】|【上】|【上終】|【下】|【下終】|【[黒赤青]線】|【線終】|【赤字】|【字終】/g, '')
       .replace(/【([△□○])([^】]*)】/g, '$2');
 
     const newText = `${before}【${shape}${inner}】${after}`;
@@ -871,9 +871,10 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
     setSelectionEnd(null);
   };
 
-  // --- 選択範囲に太い黒線を引く（box=囲み枠／v=縦の補助線／h=横の補助線） ---
-  const BORDER_OPEN = { box: '【枠】', v: '【縦】', h: '【横】' };
-  const BORDER_CLOSE = { box: '【枠終】', v: '【縦終】', h: '【横終】' };
+  // --- 選択範囲に太い黒線を引く（box=囲み枠／l・r=左右の縦線／t・b=上下の横線） ---
+  const BORDER_OPEN = { box: '【枠】', l: '【左】', r: '【右】', t: '【上】', b: '【下】' };
+  const BORDER_CLOSE = { box: '【枠終】', l: '【左終】', r: '【右終】', t: '【上終】', b: '【下終】' };
+  const BORDER_TAG_RE = /【枠】|【枠終】|【左】|【左終】|【右】|【右終】|【上】|【上終】|【下】|【下終】/g;
   const applyBorder = (mode) => {
     if (!selectedRange) return;
     const [minIdx, maxIdx] = selectedRange;
@@ -882,7 +883,7 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
     const after = state.text.substring(maxIdx);
 
     // 入れ子・モード重複を避けるため内側の枠線タグは除去
-    const cleanMiddle = middle.replace(/【枠】|【枠終】|【縦】|【縦終】|【横】|【横終】/g, '');
+    const cleanMiddle = middle.replace(BORDER_TAG_RE, '');
     const newText = `${before}${BORDER_OPEN[mode]}${cleanMiddle}${BORDER_CLOSE[mode]}${after}`;
     updateState('text', newText);
     setSelectionStart(null);
@@ -898,13 +899,13 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
 
     // 装飾・穴・枠を除去し、図形は中身の文字だけ残す
     const cleanMiddle = middle
-      .replace(/【[黒赤青]線】|【線終】|【赤字】|【字終】|【穴】|【穴終】|【枠】|【枠終】|【縦】|【縦終】|【横】|【横終】/g, '')
+      .replace(/【[黒赤青]線】|【線終】|【赤字】|【字終】|【穴】|【穴終】|【枠】|【枠終】|【左】|【左終】|【右】|【右終】|【上】|【上終】|【下】|【下終】/g, '')
       .replace(/【([△□○])([^】]*)】/g, '$2');
 
     // before側で開いたままの装飾タグを閉じる（選択範囲に色・穴が漏れないようにする）
     const getActiveFormatting = (t) => {
       let textColor = null, lineColor = null, blank = false, border = null;
-      const tags = t.match(/【[黒赤青]線】|【線終】|【赤字】|【字終】|【穴】|【穴終】|【枠】|【枠終】|【縦】|【縦終】|【横】|【横終】/g) || [];
+      const tags = t.match(/【[黒赤青]線】|【線終】|【赤字】|【字終】|【穴】|【穴終】|【枠】|【枠終】|【左】|【左終】|【右】|【右終】|【上】|【上終】|【下】|【下終】/g) || [];
       for (const tag of tags) {
         if (tag === '【赤字】') textColor = 'red';
         else if (tag === '【字終】') textColor = null;
@@ -915,9 +916,11 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
         else if (tag === '【穴】') blank = true;
         else if (tag === '【穴終】') blank = false;
         else if (tag === '【枠】') border = 'box';
-        else if (tag === '【縦】') border = 'v';
-        else if (tag === '【横】') border = 'h';
-        else if (tag === '【枠終】' || tag === '【縦終】' || tag === '【横終】') border = null;
+        else if (tag === '【左】') border = 'l';
+        else if (tag === '【右】') border = 'r';
+        else if (tag === '【上】') border = 't';
+        else if (tag === '【下】') border = 'b';
+        else if (tag === '【枠終】' || tag === '【左終】' || tag === '【右終】' || tag === '【上終】' || tag === '【下終】') border = null;
       }
       return { textColor, lineColor, blank, border };
     };
@@ -1073,11 +1076,17 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
             <button onClick={() => applyBorder('box')} className="p-2 hover:bg-slate-100 rounded-full text-slate-700 hover:text-slate-900 transition-colors flex items-center justify-center" title="太い黒枠で囲む（マスを使って図形を描く）">
                <Square size={16} strokeWidth={3} />
             </button>
-            <button onClick={() => applyBorder('v')} className="p-2 hover:bg-slate-100 rounded-full group transition-colors flex items-center justify-center" title="縦の補助線（黒・太）でノートを区切る">
-               <div className="w-0.5 h-5 bg-slate-900 group-hover:scale-110 transition-transform"></div>
+            <button onClick={() => applyBorder('l')} className="w-8 h-8 hover:bg-slate-100 rounded-full group transition-colors flex items-center justify-center" title="左側に縦の補助線（黒・太）を引く">
+               <div className="w-4 h-4 border-l-[3px] border-slate-900 group-hover:scale-110 transition-transform"></div>
             </button>
-            <button onClick={() => applyBorder('h')} className="p-2 hover:bg-slate-100 rounded-full group transition-colors flex items-center justify-center" title="横の補助線（黒・太）でノートを区切る">
-               <div className="w-5 h-0.5 bg-slate-900 group-hover:scale-110 transition-transform"></div>
+            <button onClick={() => applyBorder('r')} className="w-8 h-8 hover:bg-slate-100 rounded-full group transition-colors flex items-center justify-center" title="右側に縦の補助線（黒・太）を引く">
+               <div className="w-4 h-4 border-r-[3px] border-slate-900 group-hover:scale-110 transition-transform"></div>
+            </button>
+            <button onClick={() => applyBorder('t')} className="w-8 h-8 hover:bg-slate-100 rounded-full group transition-colors flex items-center justify-center" title="上側に横の補助線（黒・太）を引く">
+               <div className="w-4 h-4 border-t-[3px] border-slate-900 group-hover:scale-110 transition-transform"></div>
+            </button>
+            <button onClick={() => applyBorder('b')} className="w-8 h-8 hover:bg-slate-100 rounded-full group transition-colors flex items-center justify-center" title="下側に横の補助線（黒・太）を引く">
+               <div className="w-4 h-4 border-b-[3px] border-slate-900 group-hover:scale-110 transition-transform"></div>
             </button>
           </div>
           <div className="w-px h-6 bg-slate-200 mx-1"></div>
@@ -1160,8 +1169,8 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
   const { content, type, boxColor, edges, month, day, lineColor, textColor, shape, blankId, blankEdges, borderEdges, borderMode, originalIndex } = cellObj;
   const isBlank = blankId != null;
 
-  // 選択状態の判定
-  const isSelected = selectedRange && originalIndex !== undefined && originalIndex >= selectedRange[0] && originalIndex <= selectedRange[1];
+  // 選択状態の判定（selectedRange[1] は排他的な終端なので < で判定する）
+  const isSelected = selectedRange && originalIndex !== undefined && originalIndex >= selectedRange[0] && originalIndex < selectedRange[1];
 
   // 枠線の描画用要素 (チョーク・色鉛筆のような少し柔らかい線の表現)
   let borderClass = '';
@@ -1187,17 +1196,16 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
 
   // 任意のマスに引く太い黒線。連続したマスは外周だけを描くので、
   //  ・box → 四角く囲む（図形描画）
-  //  ・v   → 左右の縦線だけ（ノートを縦に区切る補助線）
-  //  ・h   → 上下の横線だけ（ノートを横に区切る補助線）
+  //  ・l/r → 左/右どちらか一方の縦線（ノートを縦に区切る補助線）
+  //  ・t/b → 上/下どちらか一方の横線（ノートを横に区切る補助線）
   let borderBoxEl = null;
   if (borderEdges) {
-    const showV = borderMode === 'box' || borderMode === 'v';
-    const showH = borderMode === 'box' || borderMode === 'h';
+    const m = borderMode;
     let bb = 'absolute inset-0 pointer-events-none z-20 border-slate-900';
-    if (showH && borderEdges.top) bb += ' border-t-[3px]';
-    if (showH && borderEdges.bottom) bb += ' border-b-[3px]';
-    if (showV && borderEdges.left) bb += ' border-l-[3px]';
-    if (showV && borderEdges.right) bb += ' border-r-[3px]';
+    if ((m === 'box' || m === 't') && borderEdges.top) bb += ' border-t-[3px]';
+    if ((m === 'box' || m === 'b') && borderEdges.bottom) bb += ' border-b-[3px]';
+    if ((m === 'box' || m === 'l') && borderEdges.left) bb += ' border-l-[3px]';
+    if ((m === 'box' || m === 'r') && borderEdges.right) bb += ' border-r-[3px]';
     borderBoxEl = <div className={bb} />;
   }
 
@@ -1397,7 +1405,7 @@ function useParsedText(text, cellsPerLine, maxLines, direction) {
       }
 
       let currentLineCells = [];
-      const tokens = line.match(/(【[めも問じ自ま終]】|【[△□○][^】]*】|【穴】|【穴終】|【枠】|【枠終】|【縦】|【縦終】|【横】|【横終】|【[黒赤青]線】|【線終】|【赤字】|【字終】|\d{1,2}\/\d{1,2}|\d{2,}|[\s\S])/g) || [];
+      const tokens = line.match(/(【[めも問じ自ま終]】|【[△□○][^】]*】|【穴】|【穴終】|【枠】|【枠終】|【左】|【左終】|【右】|【右終】|【上】|【上終】|【下】|【下終】|【[黒赤青]線】|【線終】|【赤字】|【字終】|\d{1,2}\/\d{1,2}|\d{2,}|[\s\S])/g) || [];
       
       for (let i = 0; i < tokens.length; i++) {
         let token = tokens[i];
@@ -1414,9 +1422,11 @@ function useParsedText(text, cellsPerLine, maxLines, direction) {
         if (token === '【穴】') { currentBlankId = ++blankCounter; continue; }
         if (token === '【穴終】') { currentBlankId = null; continue; }
         if (token === '【枠】') { currentBorderId = ++borderCounter; currentBorderMode = 'box'; continue; }
-        if (token === '【縦】') { currentBorderId = ++borderCounter; currentBorderMode = 'v'; continue; }
-        if (token === '【横】') { currentBorderId = ++borderCounter; currentBorderMode = 'h'; continue; }
-        if (token === '【枠終】' || token === '【縦終】' || token === '【横終】') { currentBorderId = null; currentBorderMode = null; continue; }
+        if (token === '【左】') { currentBorderId = ++borderCounter; currentBorderMode = 'l'; continue; }
+        if (token === '【右】') { currentBorderId = ++borderCounter; currentBorderMode = 'r'; continue; }
+        if (token === '【上】') { currentBorderId = ++borderCounter; currentBorderMode = 't'; continue; }
+        if (token === '【下】') { currentBorderId = ++borderCounter; currentBorderMode = 'b'; continue; }
+        if (token === '【枠終】' || token === '【左終】' || token === '【右終】' || token === '【上終】' || token === '【下終】') { currentBorderId = null; currentBorderMode = null; continue; }
 
         let cellObj = {
           content: token, type: 'normal', boxColor: currentBoxColor, blockId: currentBlockId,
