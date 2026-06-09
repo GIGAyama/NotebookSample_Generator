@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import {
   Settings, Printer, Download, BookOpen, LayoutTemplate, Type, FileText,
   Clock, AlertTriangle, Save, FolderOpen, Upload, Pencil, Eye,
-  SquareDashed, CheckCircle, Trash2, Loader2, X, Highlighter, Eraser, Keyboard,
+  SquareDashed, Square, CheckCircle, Trash2, Loader2, X, Highlighter, Eraser, Keyboard,
   Database, HelpCircle
 } from 'lucide-react';
 
@@ -120,7 +120,8 @@ const globalStyles = `
     .print-area > div[id="scaleWrapper"] ~ *, .print-area ~ * { display: none !important; }
     #scaleWrapper { transform: none !important; margin: 0 !important; flex-direction: column !important; gap: 0 !important; direction: ltr !important; display: block !important; width: 100% !important; height: auto !important; }
     .flex-1.flex.flex-col.overflow-hidden { overflow: visible !important; height: auto !important; display: block !important; }
-    .a4-paper { box-shadow: none !important; margin: 0 !important; border: none !important; page-break-after: always; break-after: page; }
+    .a4-paper { box-shadow: none !important; margin: 0 !important; border: none !important; page-break-after: always; break-after: page; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .a4-paper * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     .a4-paper:last-child { page-break-after: auto; break-after: auto; }
   }
 `;
@@ -612,8 +613,10 @@ export default function App() {
                     <span><b>【□2】</b> 四角に数字</span>
                     <span><b>【○3】</b> 丸に数字</span>
                     <span><b>【穴】〜【穴終】</b> 穴埋め</span>
+                    <span><b>【枠】〜【枠終】</b> 太い黒枠</span>
                   </div>
-                  <p className="pt-0.5 text-emerald-700">なぞって出るバーから「図形」「穴埋め」も指定できます</p>
+                  <p className="pt-0.5 text-emerald-700">なぞって出るバーから「図形」「穴埋め」「枠線」も指定できます</p>
+                  <p className="text-emerald-700">空白（スペース）を選んで「枠線」を押すと、マスを使って図形（四角など）を描けます</p>
                 </div>
               )}
               <textarea ref={textareaRef} value={state.text} onChange={(e) => updateState('text', e.target.value)} rows={5} className="w-full border-2 border-slate-200 rounded-lg p-2 text-sm focus:ring-4 focus:ring-emerald-700/20 focus:border-emerald-700 outline-none transition-all resize-none shadow-inner bg-slate-50" placeholder="ここに板書計画を入力します..." />
@@ -841,7 +844,7 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
 
     // 中身は素の文字だけにする（装飾・穴・既存図形を取り除く）
     const inner = middle
-      .replace(/【穴】|【穴終】|【[黒赤青]線】|【線終】|【赤字】|【字終】/g, '')
+      .replace(/【穴】|【穴終】|【枠】|【枠終】|【[黒赤青]線】|【線終】|【赤字】|【字終】/g, '')
       .replace(/【([△□○])([^】]*)】/g, '$2');
 
     const newText = `${before}【${shape}${inner}】${after}`;
@@ -866,6 +869,22 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
     setSelectionEnd(null);
   };
 
+  // --- 選択範囲を太い黒枠で囲む（マスを使った図形描画用） ---
+  const applyBorder = () => {
+    if (!selectedRange) return;
+    const [minIdx, maxIdx] = selectedRange;
+    const before = state.text.substring(0, minIdx);
+    const middle = state.text.substring(minIdx, maxIdx);
+    const after = state.text.substring(maxIdx);
+
+    // 入れ子を避けるため内側の枠タグは除去
+    const cleanMiddle = middle.replace(/【枠】|【枠終】/g, '');
+    const newText = `${before}【枠】${cleanMiddle}【枠終】${after}`;
+    updateState('text', newText);
+    setSelectionStart(null);
+    setSelectionEnd(null);
+  };
+
   const clearDecoration = () => {
     if (!selectedRange) return;
     const [minIdx, maxIdx] = selectedRange;
@@ -873,15 +892,15 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
     const middle = state.text.substring(minIdx, maxIdx);
     const after = state.text.substring(maxIdx);
 
-    // 装飾・穴を除去し、図形は中身の文字だけ残す
+    // 装飾・穴・枠を除去し、図形は中身の文字だけ残す
     const cleanMiddle = middle
-      .replace(/【[黒赤青]線】|【線終】|【赤字】|【字終】|【穴】|【穴終】/g, '')
+      .replace(/【[黒赤青]線】|【線終】|【赤字】|【字終】|【穴】|【穴終】|【枠】|【枠終】/g, '')
       .replace(/【([△□○])([^】]*)】/g, '$2');
 
     // before側で開いたままの装飾タグを閉じる（選択範囲に色・穴が漏れないようにする）
     const getActiveFormatting = (t) => {
-      let textColor = null, lineColor = null, blank = false;
-      const tags = t.match(/【[黒赤青]線】|【線終】|【赤字】|【字終】|【穴】|【穴終】/g) || [];
+      let textColor = null, lineColor = null, blank = false, border = false;
+      const tags = t.match(/【[黒赤青]線】|【線終】|【赤字】|【字終】|【穴】|【穴終】|【枠】|【枠終】/g) || [];
       for (const tag of tags) {
         if (tag === '【赤字】') textColor = 'red';
         else if (tag === '【字終】') textColor = null;
@@ -891,8 +910,10 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
         else if (tag === '【線終】') lineColor = null;
         else if (tag === '【穴】') blank = true;
         else if (tag === '【穴終】') blank = false;
+        else if (tag === '【枠】') border = true;
+        else if (tag === '【枠終】') border = false;
       }
-      return { textColor, lineColor, blank };
+      return { textColor, lineColor, blank, border };
     };
 
     const beforeState = getActiveFormatting(before);
@@ -902,6 +923,7 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
     if (beforeState.textColor) closingTags += '【字終】';
     if (beforeState.lineColor) closingTags += '【線終】';
     if (beforeState.blank) closingTags += '【穴終】';
+    if (beforeState.border) closingTags += '【枠終】';
 
     let reopeningTags = '';
     if (afterState.textColor === 'red') reopeningTags += '【赤字】';
@@ -910,6 +932,7 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
       reopeningTags += lineTagMap[afterState.lineColor];
     }
     if (afterState.blank) reopeningTags += '【穴】';
+    if (afterState.border) reopeningTags += '【枠】';
 
     const newText = before + closingTags + cleanMiddle + reopeningTags + after;
 
@@ -1039,6 +1062,10 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
              <SquareDashed size={16} /> 穴埋め
           </button>
           <div className="w-px h-6 bg-slate-200 mx-1"></div>
+          <button onClick={applyBorder} className="p-2 hover:bg-slate-100 rounded-full text-slate-700 hover:text-slate-900 transition-colors flex items-center gap-1 text-xs font-bold" title="選択範囲を太い黒枠で囲む（マスを使って図形を描く）">
+             <Square size={16} strokeWidth={3} /> 枠線
+          </button>
+          <div className="w-px h-6 bg-slate-200 mx-1"></div>
           <button onClick={clearDecoration} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1 text-xs font-bold" title="装飾をクリア">
              <Eraser size={16} /> クリア
           </button>
@@ -1115,7 +1142,7 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
   const style = (gridColumn && gridRow) ? { gridColumn, gridRow } : {};
   if (!cellObj) return <div className={`cell ${className}`} style={style} />;
 
-  const { content, type, boxColor, edges, month, day, lineColor, textColor, shape, blankId, blankEdges, originalIndex } = cellObj;
+  const { content, type, boxColor, edges, month, day, lineColor, textColor, shape, blankId, blankEdges, borderEdges, originalIndex } = cellObj;
   const isBlank = blankId != null;
 
   // 選択状態の判定
@@ -1141,6 +1168,17 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
     if (blankEdges.left) bc += ' border-l-2';
     if (blankEdges.right) bc += ' border-r-2';
     blankBorderEl = <div className={bc} />;
+  }
+
+  // 任意のマスを囲む太い黒枠（連続したマスは外周だけを描いて図形の輪郭にする）
+  let borderBoxEl = null;
+  if (borderEdges) {
+    let bb = 'absolute inset-0 pointer-events-none z-20 border-slate-900';
+    if (borderEdges.top) bb += ' border-t-[3px]';
+    if (borderEdges.bottom) bb += ' border-b-[3px]';
+    if (borderEdges.left) bb += ' border-l-[3px]';
+    if (borderEdges.right) bb += ' border-r-[3px]';
+    borderBoxEl = <div className={bb} />;
   }
 
   // スキャフォールディングの共通判定
@@ -1185,6 +1223,7 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
           <div className={`cell ${className}`} style={style} {...interactiveProps}>
             {borderClass && <div className={borderClass} />}
             {blankBorderEl}
+          {borderBoxEl}
             {lineElement}
             {isSelected && <div className="absolute inset-0 bg-emerald-500/20 z-30 pointer-events-none" />}
             {dispContent && <span className={cClass} style={{ fontSize }}>{dispContent}</span>}
@@ -1196,6 +1235,7 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
         <div className={`cell ${className}`} style={style} {...interactiveProps}>
           {borderClass && <div className={borderClass} />}
           {blankBorderEl}
+          {borderBoxEl}
           {!isBlank && lineElement}
           {isSelected && <div className="absolute inset-0 bg-emerald-500/20 z-30 pointer-events-none" />}
 
@@ -1256,6 +1296,7 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
         <div className={`cell ${className}`} style={style} {...interactiveProps}>
           {borderClass && <div className={borderClass} />}
           {blankBorderEl}
+          {borderBoxEl}
           {isSelected && <div className="absolute inset-0 bg-emerald-500/20 z-30 pointer-events-none" />}
           <div className={`absolute inset-0 flex items-center justify-center pointer-events-none ${colorClass}`}>
               {shapeEl}
@@ -1274,6 +1315,7 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
         <div className={`cell ${className}`} style={style} {...interactiveProps}>
           {borderClass && <div className={borderClass} />}
           {blankBorderEl}
+          {borderBoxEl}
           {isSelected && <div className="absolute inset-0 bg-emerald-500/20 z-30 pointer-events-none" />}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className={cClass}><span style={{ fontSize: '0.7em' }}>{dispContent}</span></div>
@@ -1287,9 +1329,12 @@ const Cell = React.memo(({ cellObj, className = '', supportMode, isVertical, gri
         <div className={`cell ${className}`} style={style} {...interactiveProps}>
           {borderClass && <div className={borderClass} />}
           {blankBorderEl}
+          {borderBoxEl}
           {isSelected && <div className="absolute inset-0 bg-emerald-500/20 z-30 pointer-events-none" />}
-          {/* 右上と左下を結ぶ（／）の斜線 */}
-          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(to bottom right, transparent 48%, rgba(0,0,0,0.3) 48.5%, rgba(0,0,0,0.3) 51.5%, transparent 52%)' }} />
+          {/* 右上と左下を結ぶ（／）の斜線。印刷・PDF・PNGで確実に表示されるよう前景のSVGで描画する */}
+          <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+            <line x1="0" y1="100" x2="100" y2="0" stroke="rgba(0,0,0,0.4)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+          </svg>
           <span className="absolute top-[8%] left-[8%] text-[0.6em] font-bold leading-none pointer-events-none">{month}</span>
           <span className="absolute bottom-[8%] right-[8%] text-[0.6em] font-bold leading-none pointer-events-none">{day}</span>
         </div>
@@ -1315,8 +1360,10 @@ function useParsedText(text, cellsPerLine, maxLines, direction) {
     let currentLineColor = null;
     let currentTextColor = null;
     let currentBlankId = null;
+    let currentBorderId = null;
     let blockCounter = 0;
     let blankCounter = 0;
+    let borderCounter = 0;
     
     // 元テキストとのマッピング用
     let currentIndex = 0;
@@ -1329,7 +1376,7 @@ function useParsedText(text, cellsPerLine, maxLines, direction) {
       }
 
       let currentLineCells = [];
-      const tokens = line.match(/(【[めも問じ自ま終]】|【[△□○][^】]*】|【穴】|【穴終】|【[黒赤青]線】|【線終】|【赤字】|【字終】|\d{1,2}\/\d{1,2}|\d{2,}|[\s\S])/g) || [];
+      const tokens = line.match(/(【[めも問じ自ま終]】|【[△□○][^】]*】|【穴】|【穴終】|【枠】|【枠終】|【[黒赤青]線】|【線終】|【赤字】|【字終】|\d{1,2}\/\d{1,2}|\d{2,}|[\s\S])/g) || [];
       
       for (let i = 0; i < tokens.length; i++) {
         let token = tokens[i];
@@ -1345,10 +1392,13 @@ function useParsedText(text, cellsPerLine, maxLines, direction) {
         if (token === '【字終】') { currentTextColor = null; continue; }
         if (token === '【穴】') { currentBlankId = ++blankCounter; continue; }
         if (token === '【穴終】') { currentBlankId = null; continue; }
+        if (token === '【枠】') { currentBorderId = ++borderCounter; continue; }
+        if (token === '【枠終】') { currentBorderId = null; continue; }
 
         let cellObj = {
           content: token, type: 'normal', boxColor: currentBoxColor, blockId: currentBlockId,
           lineColor: currentLineColor, textColor: currentTextColor, blankId: currentBlankId,
+          borderId: currentBorderId,
           originalIndex: tokenStartIndex, originalLength: token.length
         };
 
@@ -1449,6 +1499,9 @@ function useParsedText(text, cellsPerLine, maxLines, direction) {
           }
           if (cell.blankId) {
             cell.blankEdges = computeEdges(p, l, c, (o) => o.blankId === cell.blankId);
+          }
+          if (cell.borderId) {
+            cell.borderEdges = computeEdges(p, l, c, (o) => o.borderId === cell.borderId);
           }
         }
       }
