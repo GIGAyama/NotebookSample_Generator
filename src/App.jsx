@@ -144,13 +144,21 @@ const VERTICAL_ROTATE_CHARS = ['ー', '「', '」', '『', '』', '（', '）', 
 const OPEN_BRACKETS = ['「', '『', '（', '【', '〈', '《'];
 const CLOSE_BRACKETS = ['」', '』', '）', '】', '〉', '》'];
 const WRITING_SPEEDS = { 1: 10, 2: 15, 3: 20, 4: 25, 5: 30, 6: 35 };
+const clampNum = (v, min, max) => Math.min(max, Math.max(min, v));
 
 function useLocalStorage(key, initialValue) {
   const [storedValue, setStoredValue] = useState(() => {
     if (typeof window === "undefined") return initialValue;
     try {
       const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
+      if (!item) return initialValue;
+      const parsed = JSON.parse(item);
+      // 旧バージョンの保存データに新しい設定キーが無くても壊れないようデフォルトとマージ
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) &&
+          initialValue && typeof initialValue === 'object' && !Array.isArray(initialValue)) {
+        return { ...initialValue, ...parsed };
+      }
+      return parsed;
     } catch (error) {
       console.warn(error);
       return initialValue;
@@ -171,16 +179,9 @@ function useLocalStorage(key, initialValue) {
   return [storedValue, setValue];
 }
 
-const loadHtml2Canvas = () => {
-  return new Promise((resolve, reject) => {
-    if (window.html2canvas) return resolve(window.html2canvas);
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
-    script.onload = () => resolve(window.html2canvas);
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-};
+// html2canvas-pro をバンドルに含め、必要時にだけ遅延読み込みする（オフラインでも動作）
+// ※ 無印の html2canvas は Tailwind v4 の oklch() カラーを解釈できず失敗するため pro 版を使用
+const loadHtml2Canvas = async () => (await import('html2canvas-pro')).default;
 
 // ==========================================
 // 3. UIコンポーネント群
@@ -361,19 +362,21 @@ const DataModal = ({ onClose, savedNotes, saveCurrentNote, loadNote, deleteNote,
 // 4. メインアプリケーション
 // ==========================================
 
+const DEFAULT_STATE = {
+  text: "4/1\n【め】10になるたしざんの\nけいさんをしよう。\n【終】ブロックをつかって\nかんがえてみましょう。\n\n【自】3と【赤線】7【線終】で【赤字】10【字終】になる。\n\n【ま】10になるかずの\nくみあわせをおぼえよう。",
+  direction: 'vertical',
+  colsCount: 15,
+  rowsCount: 10,
+  gridStyle: 'style-leader',
+  showHeader: false,
+  templateSelect: 'kokugo-15',
+  fontSizeRatio: 80,
+  grade: 3,
+  supportMode: 'normal'
+};
+
 export default function App() {
-  const [state, setState] = useLocalStorage('notebookToolState_v3', {
-    text: "4/1\n【め】10になるたしざんの\nけいさんをしよう。\n【終】ブロックをつかって\nかんがえてみましょう。\n\n【自】3と【赤線】7【線終】で【赤字】10【字終】になる。\n\n【ま】10になるかずの\nくみあわせをおぼえよう。",
-    direction: 'vertical',
-    colsCount: 15,
-    rowsCount: 10,
-    gridStyle: 'style-leader',
-    showHeader: false,
-    templateSelect: 'kokugo-15',
-    fontSizeRatio: 80,
-    grade: 3,
-    supportMode: 'normal'
-  });
+  const [state, setState] = useLocalStorage('notebookToolState_v3', DEFAULT_STATE);
 
   const [savedNotes, setSavedNotes] = useLocalStorage('notebookToolSavedNotes', []);
   const fileInputRef = useRef(null);
@@ -392,10 +395,13 @@ export default function App() {
   const isExportingRef = useRef(isExporting);
   useEffect(() => { isExportingRef.current = isExporting; }, [isExporting]);
 
+  const toastTimerRef = useRef(null);
   const showToast = useCallback((message, type = 'success') => {
+    clearTimeout(toastTimerRef.current);
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3500);
+    toastTimerRef.current = setTimeout(() => setToast(null), 3500);
   }, []);
+  useEffect(() => () => clearTimeout(toastTimerRef.current), []);
 
   const updateState = useCallback((key, value) => {
     setState(prev => ({ ...prev, [key]: value }));
@@ -432,21 +438,22 @@ export default function App() {
   const loadNote = (noteId) => {
     if(!window.confirm('現在の編集内容は失われます。読み込みますか？')) return;
     const note = savedNotes.find(n => n.id === noteId);
-    if(note) { setState(note.stateData); showToast('ノートを読み込みました'); }
+    if(note) { setState({ ...DEFAULT_STATE, ...note.stateData }); showToast('ノートを読み込みました'); }
   };
 
   const deleteNote = (noteId) => {
     if(window.confirm('この保存データを削除しますか？')) {
-      setSavedNotes(savedNotes.filter(n => n.id !== noteId));
+      setSavedNotes(prev => prev.filter(n => n.id !== noteId));
       showToast('データを削除しました', 'info');
     }
   };
 
   const exportData = () => {
-    const dataStr = JSON.stringify(savedNotes);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const blob = new Blob([JSON.stringify(savedNotes)], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = dataUri; link.download = 'notebook_data_backup.json'; link.click();
+    link.href = url; link.download = 'notebook_data_backup.json'; link.click();
+    URL.revokeObjectURL(url);
     showToast('バックアップを出力しました');
   };
 
@@ -457,9 +464,15 @@ export default function App() {
     reader.onload = (e) => {
       try {
         const imported = JSON.parse(e.target.result);
-        if (Array.isArray(imported)) { setSavedNotes([...imported, ...savedNotes]); showToast('データをインポートしました！'); } 
-        else { throw new Error('Invalid format'); }
-      } catch(err) { alert('ファイルの読み込みに失敗しました。'); }
+        if (!Array.isArray(imported)) throw new Error('Invalid format');
+        // ノートとして成立しているデータだけ受け入れる
+        const valid = imported.filter(n => n && typeof n === 'object' && n.id && n.stateData);
+        if (valid.length === 0) throw new Error('No valid notes');
+        // 同じIDの既存データは重複させない
+        const importedIds = new Set(valid.map(n => n.id));
+        setSavedNotes(prev => [...valid, ...prev.filter(n => !importedIds.has(n.id))]);
+        showToast(`${valid.length}件のノートをインポートしました！`);
+      } catch(err) { alert('ファイルの読み込みに失敗しました。バックアップファイルの形式が正しくありません。'); }
     };
     reader.readAsText(file);
     event.target.value = '';
@@ -654,11 +667,11 @@ export default function App() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-600 mb-0.5">1行のマス数</label>
-                  <input type="number" min="5" max="30" value={state.colsCount} onChange={(e) => handleCustomChange('colsCount', parseInt(e.target.value)||10)} disabled={isGenko} className="w-full border-2 border-slate-200 rounded-lg p-1.5 text-sm text-center outline-none focus:border-emerald-700" />
+                  <input type="number" min="5" max="30" value={state.colsCount} onChange={(e) => handleCustomChange('colsCount', clampNum(parseInt(e.target.value)||10, 5, 30))} disabled={isGenko} className="w-full border-2 border-slate-200 rounded-lg p-1.5 text-sm text-center outline-none focus:border-emerald-700" />
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-600 mb-0.5">行数</label>
-                  <input type="number" min="3" max="25" value={state.rowsCount} onChange={(e) => handleCustomChange('rowsCount', parseInt(e.target.value)||7)} disabled={isGenko} className="w-full border-2 border-slate-200 rounded-lg p-1.5 text-sm text-center outline-none focus:border-emerald-700" />
+                  <input type="number" min="3" max="25" value={state.rowsCount} onChange={(e) => handleCustomChange('rowsCount', clampNum(parseInt(e.target.value)||7, 3, 25))} disabled={isGenko} className="w-full border-2 border-slate-200 rounded-lg p-1.5 text-sm text-center outline-none focus:border-emerald-700" />
                 </div>
               </div>
 
