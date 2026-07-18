@@ -187,26 +187,29 @@ const loadHtml2Canvas = async () => (await import('html2canvas-pro')).default;
 // 3. UIコンポーネント群
 // ==========================================
 
-const Header = ({ onShowHelp, onShowSupport, onShowData }) => (
-  <nav className="bg-white border-b-4 border-emerald-700 px-4 py-1.5 flex justify-between items-center shadow-sm z-10 no-print relative">
+const Header = ({ onShowHelp, onShowSupport, onShowData, onTogglePanel }) => (
+  <nav className="bg-white border-b-4 border-emerald-700 px-3 sm:px-4 py-1.5 flex justify-between items-center shadow-sm z-10 no-print relative">
     <div className="flex items-center gap-2">
-      <div className="bg-emerald-100 p-1.5 rounded-lg text-emerald-800">
+      <button onClick={onTogglePanel} className="md:hidden flex items-center gap-1 text-emerald-800 bg-emerald-100 hover:bg-emerald-200 px-2 py-1.5 rounded-lg transition-colors font-bold text-xs" title="設定パネルを開閉">
+        <Settings size={16} strokeWidth={2.5} /> 設定
+      </button>
+      <div className="bg-emerald-100 p-1.5 rounded-lg text-emerald-800 hidden sm:block">
         <BookOpen size={20} strokeWidth={2.5} />
       </div>
-      <h1 className="text-lg font-bold text-slate-800 tracking-wide">ノート見本作成ツール <span className="text-xs text-emerald-700 font-bold ml-1 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">PRO</span></h1>
+      <h1 className="text-sm sm:text-lg font-bold text-slate-800 tracking-wide whitespace-nowrap">ノート見本作成ツール<span className="hidden sm:inline text-xs text-emerald-700 font-bold ml-1 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">PRO</span></h1>
     </div>
-    <div className="flex items-center gap-2">
-      <button onClick={onShowSupport} className="flex items-center gap-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg border border-blue-200 transition-colors text-xs font-bold shadow-sm" title="支援・分析 (Alt+2)">
+    <div className="flex items-center gap-1.5 sm:gap-2">
+      <button onClick={onShowSupport} className="flex items-center gap-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 sm:px-2.5 py-1.5 sm:py-1 rounded-lg border border-blue-200 transition-colors text-xs font-bold shadow-sm" title="支援・分析 (Alt+2)">
         <Eye size={14} />
         <span className="hidden sm:inline">支援・分析</span>
-        <kbd className="font-mono text-[10px] bg-white px-1 border border-blue-200 rounded shadow-sm text-slate-500">Alt+2</kbd>
+        <kbd className="hidden sm:inline font-mono text-[10px] bg-white px-1 border border-blue-200 rounded shadow-sm text-slate-500">Alt+2</kbd>
       </button>
-      <button onClick={onShowData} className="flex items-center gap-1.5 text-amber-700 bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-200 transition-colors text-xs font-bold shadow-sm" title="データ管理 (Alt+3)">
+      <button onClick={onShowData} className="flex items-center gap-1.5 text-amber-700 bg-amber-50 hover:bg-amber-100 px-2 sm:px-2.5 py-1.5 sm:py-1 rounded-lg border border-amber-200 transition-colors text-xs font-bold shadow-sm" title="データ管理 (Alt+3)">
         <Database size={14} />
         <span className="hidden sm:inline">データ管理</span>
-        <kbd className="font-mono text-[10px] bg-white px-1 border border-amber-200 rounded shadow-sm text-slate-500">Alt+3</kbd>
+        <kbd className="hidden sm:inline font-mono text-[10px] bg-white px-1 border border-amber-200 rounded shadow-sm text-slate-500">Alt+3</kbd>
       </button>
-      <button onClick={onShowHelp} className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg border border-emerald-200 transition-colors text-xs font-bold shadow-sm" title="キーボードショートカット一覧">
+      <button onClick={onShowHelp} className="hidden sm:flex items-center gap-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg border border-emerald-200 transition-colors text-xs font-bold shadow-sm" title="キーボードショートカット一覧">
         <Keyboard size={14} />
         <kbd className="font-mono text-[10px] bg-white px-1 border border-emerald-200 rounded shadow-sm text-slate-500">F1</kbd>
       </button>
@@ -388,6 +391,8 @@ export default function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [showData, setShowData] = useState(false);
+  // モバイルでは設定パネルをドロワーとして開閉し、プレビュー（学習領域）を広く使えるようにする
+  const [panelOpen, setPanelOpen] = useState(false);
 
   // --- キーボードイベント用 最新State参照 ---
   const stateRef = useRef(state);
@@ -534,6 +539,9 @@ export default function App() {
         return;
       }
 
+      // モバイルの設定ドロワーを Esc で閉じる
+      if (e.key === 'Escape') { setPanelOpen(false); }
+
       // 保存・印刷・保存 (Ctrl / Cmd)
       if (e.ctrlKey || e.metaKey) {
         if (e.key.toLowerCase() === 's') { e.preventDefault(); saveCurrentNote(); return; }
@@ -593,17 +601,32 @@ export default function App() {
   const [showMacroHelp, setShowMacroHelp] = useState(false);
 
   return (
-    <div className="h-screen bg-slate-50 flex flex-col font-['Zen_Maru_Gothic'] overflow-hidden">
+    <div className="h-dvh bg-slate-50 flex flex-col font-['Zen_Maru_Gothic'] overflow-hidden">
       <style>{globalStyles}</style>
       <style id="printPageStyle">{`@media print { @page { size: ${isLandscape ? 'A4 landscape' : 'A4 portrait'}; margin: 0; } }`}</style>
 
-      <Header onShowHelp={() => setShowHelp(true)} onShowSupport={() => setShowSupport(true)} onShowData={() => setShowData(true)} />
+      <Header onShowHelp={() => setShowHelp(true)} onShowSupport={() => setShowSupport(true)} onShowData={() => setShowData(true)} onTogglePanel={() => setPanelOpen(p => !p)} />
       {showHelp && <KeyboardHelpModal onClose={() => setShowHelp(false)} />}
       {showSupport && <SupportModal onClose={() => setShowSupport(false)} state={state} updateState={updateState} />}
       {showData && <DataModal onClose={() => setShowData(false)} savedNotes={savedNotes} saveCurrentNote={saveCurrentNote} loadNote={loadNote} deleteNote={deleteNote} exportData={exportData} fileInputRef={fileInputRef} handleImport={handleImport} />}
 
       <main className="flex flex-col md:flex-row flex-1 overflow-hidden relative">
-        <aside className="w-full md:w-72 lg:w-80 bg-white border-b md:border-b-0 md:border-r border-slate-200 flex flex-col flex-none h-[40vh] md:h-full no-print shadow-sm z-10">
+        {/* モバイルでドロワーを開いたときの背景オーバーレイ */}
+        {panelOpen && (
+          <div className="md:hidden fixed inset-0 bg-slate-900/50 z-30 no-print" onClick={() => setPanelOpen(false)} aria-hidden="true" />
+        )}
+        <aside className={`bg-white flex flex-col no-print shadow-xl md:shadow-sm
+          fixed md:static inset-y-0 left-0 z-40 md:flex-none
+          w-[86%] max-w-[20rem] md:w-72 lg:w-80 md:h-full
+          border-r border-slate-200
+          transition-transform duration-300 ease-out
+          ${panelOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+
+          {/* モバイル用ドロワーヘッダー */}
+          <div className="md:hidden flex items-center justify-between px-3 py-2 border-b border-slate-200 bg-slate-50 flex-none">
+            <span className="text-sm font-bold text-slate-700 flex items-center gap-1.5"><Settings size={16} className="text-emerald-600" /> 設定</span>
+            <button onClick={() => setPanelOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-colors" title="閉じる"><X size={18} /></button>
+          </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
             {/* テキスト入力 */}
@@ -749,22 +772,34 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
       const parentWidth = parent.clientWidth;
       const parentHeight = parent.clientHeight;
       const paperHeightPx = (isLandscape ? 210 : 297) * 3.78;
+      const paperWidthPx = (isLandscape ? 297 : 210) * 3.78;
       const padding = window.innerWidth < 768 ? 8 : 16;
 
-      // 画面の高さにフィットさせるスケールを計算
-      const scale = Math.min((parentHeight - padding) / paperHeightPx, 1);
+      // まず画面の高さにフィットさせるスケールを計算
+      let scale = Math.min((parentHeight - padding) / paperHeightPx, 1);
+
+      // 1ページのみのときは横幅にも収め、端末を問わず全体が大きく見えるようにする
+      // （複数ページのときは横スクロールで見られるよう高さフィットのままにする）
+      const paperCount = wrapperRef.current.querySelectorAll('.a4-paper').length;
+      if (paperCount <= 1) {
+        const scaleW = (parentWidth - padding) / paperWidthPx;
+        scale = Math.min(scale, scaleW);
+      }
 
       // スケール後の実サイズを設定（スクロール領域を正しく計算させるため）
       const unscaledW = wrapperRef.current.scrollWidth;
       const unscaledH = wrapperRef.current.scrollHeight;
       const scaledW = unscaledW * scale;
       const scaledH = unscaledH * scale;
+      // 縦書き（原稿用紙含む）は wrapper が direction:rtl で右詰めになるため
+      // 変形の基点も右上にする（左上のままだと1ページ時に用紙が画面左外へはみ出して見切れる）
+      const isRtl = state.direction === 'vertical';
+      wrapperRef.current.style.transformOrigin = isRtl ? 'top right' : 'top left';
       wrapperRef.current.style.transform = `scale(${scale})`;
       wrapperRef.current.style.width = `${scaledW}px`;
       wrapperRef.current.style.height = `${scaledH}px`;
-      wrapperRef.current.style.transformOrigin = 'top left';
-      // 1ページの場合は中央寄せ
-      wrapperRef.current.style.margin = scaledW < parentWidth ? '0 auto' : '0';
+      // 用紙が親幅に収まるときは中央寄せ（フレックス内なので左右autoで中央になる）
+      wrapperRef.current.style.margin = scaledW <= parentWidth ? '0 auto' : '0';
     };
     const handleResize = () => { clearTimeout(timeoutId); timeoutId = setTimeout(adjustScale, 50); };
     window.addEventListener('resize', handleResize);
@@ -1052,8 +1087,8 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
 
       {/* --- フローティング・ツールバー (装飾メニュー) --- */}
       {selectedRange && !isSelecting && (
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white px-5 py-3 rounded-full shadow-2xl border-2 border-slate-200 z-50 flex items-center gap-3 animate-in slide-in-from-bottom-4 no-print">
-          <div className="flex items-center gap-1">
+        <div className="absolute bottom-4 sm:bottom-10 left-1/2 -translate-x-1/2 max-w-[96vw] overflow-x-auto bg-white px-3 sm:px-5 py-2.5 sm:py-3 rounded-2xl sm:rounded-full shadow-2xl border-2 border-slate-200 z-50 flex items-center gap-2 sm:gap-3 flex-nowrap animate-in slide-in-from-bottom-4 no-print">
+          <div className="flex items-center gap-1 shrink-0">
             <span className="text-[10px] font-bold text-slate-400 mr-1"><Highlighter size={14} className="inline mr-0.5" />ライン</span>
             <button onClick={() => applyDecoration('【黒線】', '【線終】')} className="p-2 hover:bg-slate-100 rounded-full group transition-colors" title="黒線を引く">
                <div className="w-5 h-0.5 bg-slate-800 group-hover:scale-110 transition-transform shadow-sm"></div>
@@ -1065,26 +1100,26 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
                <div className="w-5 h-0.5 bg-blue-500 group-hover:scale-110 transition-transform shadow-sm"></div>
             </button>
           </div>
-          <div className="w-px h-6 bg-slate-200 mx-1"></div>
-          <div className="flex items-center gap-1">
+          <div className="w-px h-6 bg-slate-200 mx-1 shrink-0"></div>
+          <div className="flex items-center gap-1 shrink-0">
             <span className="text-[10px] font-bold text-slate-400 mr-1"><Type size={14} className="inline mr-0.5" />文字色</span>
             <button onClick={() => applyDecoration('【赤字】', '【字終】')} className="p-2 hover:bg-red-50 rounded-full text-red-600 font-extrabold text-sm transition-colors" title="赤字にする">
                赤
             </button>
           </div>
-          <div className="w-px h-6 bg-slate-200 mx-1"></div>
-          <div className="flex items-center gap-1">
+          <div className="w-px h-6 bg-slate-200 mx-1 shrink-0"></div>
+          <div className="flex items-center gap-1 shrink-0">
             <span className="text-[10px] font-bold text-slate-400 mr-1">図形</span>
             <button onClick={() => applyShape('△')} className="w-8 h-8 hover:bg-slate-100 rounded-full text-slate-800 font-bold text-base transition-colors flex items-center justify-center" title="三角で囲む（中に数字）">△</button>
             <button onClick={() => applyShape('□')} className="w-8 h-8 hover:bg-slate-100 rounded-full text-slate-800 font-bold text-base transition-colors flex items-center justify-center" title="四角で囲む（中に数字）">□</button>
             <button onClick={() => applyShape('○')} className="w-8 h-8 hover:bg-slate-100 rounded-full text-slate-800 font-bold text-base transition-colors flex items-center justify-center" title="丸で囲む（中に数字）">○</button>
           </div>
-          <div className="w-px h-6 bg-slate-200 mx-1"></div>
-          <button onClick={applyBlank} className="p-2 hover:bg-amber-50 rounded-full text-amber-600 hover:text-amber-700 transition-colors flex items-center gap-1 text-xs font-bold" title="選択範囲を穴埋め（空欄）にする">
+          <div className="w-px h-6 bg-slate-200 mx-1 shrink-0"></div>
+          <button onClick={applyBlank} className="p-2 hover:bg-amber-50 rounded-full text-amber-600 hover:text-amber-700 transition-colors flex items-center gap-1 text-xs font-bold shrink-0 whitespace-nowrap" title="選択範囲を穴埋め（空欄）にする">
              <SquareDashed size={16} /> 穴埋め
           </button>
-          <div className="w-px h-6 bg-slate-200 mx-1"></div>
-          <div className="flex items-center gap-1">
+          <div className="w-px h-6 bg-slate-200 mx-1 shrink-0"></div>
+          <div className="flex items-center gap-1 shrink-0">
             <span className="text-[10px] font-bold text-slate-400 mr-1">枠線</span>
             <button onClick={() => applyBorder('box')} className="p-2 hover:bg-slate-100 rounded-full text-slate-700 hover:text-slate-900 transition-colors flex items-center justify-center" title="太い黒枠で囲む（マスを使って図形を描く）">
                <Square size={16} strokeWidth={3} />
@@ -1102,8 +1137,8 @@ const PreviewArea = ({ state, updateState, isGenko, isLandscape, scrollRef }) =>
                <div className="w-4 h-4 border-b-[3px] border-slate-900 group-hover:scale-110 transition-transform"></div>
             </button>
           </div>
-          <div className="w-px h-6 bg-slate-200 mx-1"></div>
-          <button onClick={clearDecoration} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1 text-xs font-bold" title="装飾をクリア">
+          <div className="w-px h-6 bg-slate-200 mx-1 shrink-0"></div>
+          <button onClick={clearDecoration} className="p-2 hover:bg-slate-100 rounded-full text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1 text-xs font-bold shrink-0 whitespace-nowrap" title="装飾をクリア">
              <Eraser size={16} /> クリア
           </button>
         </div>
