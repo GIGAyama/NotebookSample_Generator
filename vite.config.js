@@ -11,14 +11,18 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'apple-touch-icon.png'],
       manifest: {
+        id: '/NotebookSample_Generator/',
         name: 'ノート見本作成ツール PRO',
         short_name: 'ノート見本',
         description: '小学校のノート指導用の見本（板書計画）を作成・印刷できるツール',
         lang: 'ja',
+        dir: 'ltr',
+        categories: ['education', 'productivity'],
         start_url: '/NotebookSample_Generator/',
         scope: '/NotebookSample_Generator/',
         display: 'standalone',
-        orientation: 'landscape',
+        // スマホ・タブレット・PC どの向きでも使えるよう向きは固定しない
+        orientation: 'any',
         theme_color: '#047857',
         background_color: '#f8fafc',
         icons: [
