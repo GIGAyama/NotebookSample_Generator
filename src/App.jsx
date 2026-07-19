@@ -3,8 +3,9 @@ import {
   Settings, Printer, Download, BookOpen, LayoutTemplate, Type, FileText,
   Clock, AlertTriangle, Save, FolderOpen, Upload, Pencil, Eye,
   SquareDashed, Square, CheckCircle, Trash2, Loader2, X, Highlighter, Eraser, Keyboard,
-  Database, HelpCircle
+  Database, HelpCircle, Cloud, RefreshCw, LogOut
 } from 'lucide-react';
+import { useGoogleDriveSync } from './useGoogleDriveSync';
 
 // ==========================================
 // 1. デザインと印刷用の特殊スタイル（CSS）
@@ -318,8 +319,84 @@ const SupportModal = ({ onClose, state, updateState }) => (
   </div>
 );
 
+// --- Googleドライブ同期パネル（データ管理モーダル内） ---
+const GoogleDriveSyncPanel = ({ gdrive }) => {
+  const syncing = gdrive.status === 'syncing' || gdrive.status === 'connecting';
+  const lastSyncLabel = gdrive.lastSync ? new Date(gdrive.lastSync).toLocaleString() : null;
+
+  return (
+    <div className="border-t border-slate-100 pt-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
+          <Cloud size={14} className="text-blue-600" /> Google ドライブ同期
+        </span>
+        {gdrive.connected && (
+          <span className="flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-full">
+            {syncing ? <><Loader2 size={10} className="animate-spin" /> 同期中</>
+              : gdrive.status === 'error' ? <span className="text-amber-600">再接続が必要</span>
+              : <><CheckCircle size={10} /> 接続済み</>}
+          </span>
+        )}
+      </div>
+
+      {!gdrive.configured ? (
+        <p className="text-[11px] text-slate-400 bg-slate-50 border border-slate-200 rounded-lg p-2.5 leading-relaxed">
+          この機能を使うには初期設定（Google Client ID）が必要です。<br />
+          設定手順は <code className="text-slate-500">docs/google-drive-sync.md</code> を参照してください。
+        </p>
+      ) : !gdrive.connected ? (
+        <>
+          <button
+            onClick={gdrive.connect}
+            disabled={syncing}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md text-sm"
+          >
+            {syncing ? <><Loader2 size={16} className="animate-spin" /> 接続中...</>
+              : <><Cloud size={16} /> Google でログインして同期</>}
+          </button>
+          <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+            ログインすると、保存したノートを Google ドライブへ自動でバックアップし、別の端末でも同じアカウントでログインするだけで取り込めます。
+          </p>
+        </>
+      ) : (
+        <div className="space-y-2.5">
+          <div className="flex items-center gap-2 text-xs text-slate-600 bg-blue-50/60 border border-blue-100 rounded-lg px-3 py-2">
+            <Cloud size={14} className="text-blue-500 flex-none" />
+            <span className="truncate font-medium">{gdrive.email || 'ログイン中のアカウント'}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={gdrive.syncNow}
+              disabled={syncing}
+              className="flex items-center justify-center gap-1.5 p-2.5 bg-white border-2 border-slate-200 rounded-xl hover:border-blue-500 hover:text-blue-600 transition-colors text-slate-600 font-bold text-xs disabled:opacity-60"
+            >
+              <RefreshCw size={15} className={syncing ? 'animate-spin' : ''} /> 今すぐ同期
+            </button>
+            <button
+              onClick={gdrive.disconnect}
+              className="flex items-center justify-center gap-1.5 p-2.5 bg-white border-2 border-slate-200 rounded-xl hover:border-red-400 hover:text-red-500 transition-colors text-slate-600 font-bold text-xs"
+            >
+              <LogOut size={15} /> 連携解除
+            </button>
+          </div>
+          <label className="flex items-center justify-between px-1 pt-0.5 cursor-pointer">
+            <span className="text-xs font-bold text-slate-600">保存時に自動でバックアップ</span>
+            <span className="relative inline-flex items-center">
+              <input type="checkbox" className="sr-only peer" checked={gdrive.autoSync} onChange={(e) => gdrive.setAutoSync(e.target.checked)} />
+              <span className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></span>
+            </span>
+          </label>
+          {lastSyncLabel && (
+            <p className="text-[10px] text-slate-400 text-right">最終同期: {lastSyncLabel}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // --- データ管理モーダル ---
-const DataModal = ({ onClose, savedNotes, saveCurrentNote, loadNote, deleteNote, exportData, fileInputRef, handleImport }) => (
+const DataModal = ({ onClose, savedNotes, saveCurrentNote, loadNote, deleteNote, exportData, fileInputRef, handleImport, gdrive }) => (
   <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={onClose}>
     <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto flex flex-col" onClick={e => e.stopPropagation()}>
       <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl">
@@ -353,6 +430,7 @@ const DataModal = ({ onClose, savedNotes, saveCurrentNote, loadNote, deleteNote,
           <button onClick={() => fileInputRef.current?.click()} className="flex flex-col items-center justify-center gap-1 p-3 bg-white border-2 border-slate-200 rounded-xl hover:border-emerald-700 hover:text-emerald-700 transition-colors text-slate-600 font-bold text-xs"><Upload size={20} /> バックアップ読込</button>
           <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleImport} />
         </div>
+        <GoogleDriveSyncPanel gdrive={gdrive} />
       </div>
       <div className="p-4 bg-slate-50 rounded-b-2xl border-t border-slate-200 text-center">
         <button onClick={onClose} className="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-all shadow-sm">閉じる</button>
@@ -407,6 +485,9 @@ export default function App() {
     toastTimerRef.current = setTimeout(() => setToast(null), 3500);
   }, []);
   useEffect(() => () => clearTimeout(toastTimerRef.current), []);
+
+  // Google ドライブ同期（保存ノートのバックアップ／複数端末での取り込み）
+  const gdrive = useGoogleDriveSync(savedNotes, setSavedNotes, showToast);
 
   const updateState = useCallback((key, value) => {
     setState(prev => ({ ...prev, [key]: value }));
@@ -608,7 +689,7 @@ export default function App() {
       <Header onShowHelp={() => setShowHelp(true)} onShowSupport={() => setShowSupport(true)} onShowData={() => setShowData(true)} onTogglePanel={() => setPanelOpen(p => !p)} />
       {showHelp && <KeyboardHelpModal onClose={() => setShowHelp(false)} />}
       {showSupport && <SupportModal onClose={() => setShowSupport(false)} state={state} updateState={updateState} />}
-      {showData && <DataModal onClose={() => setShowData(false)} savedNotes={savedNotes} saveCurrentNote={saveCurrentNote} loadNote={loadNote} deleteNote={deleteNote} exportData={exportData} fileInputRef={fileInputRef} handleImport={handleImport} />}
+      {showData && <DataModal onClose={() => setShowData(false)} savedNotes={savedNotes} saveCurrentNote={saveCurrentNote} loadNote={loadNote} deleteNote={deleteNote} exportData={exportData} fileInputRef={fileInputRef} handleImport={handleImport} gdrive={gdrive} />}
 
       <main className="flex flex-col md:flex-row flex-1 overflow-hidden relative">
         {/* モバイルでドロワーを開いたときの背景オーバーレイ */}
