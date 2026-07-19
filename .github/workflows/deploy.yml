@@ -32,6 +32,12 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Google ドライブ同期用の OAuth クライアントID（公開情報・シークレットではない）。
+          # リポジトリの Settings > Secrets and variables > Actions > Variables に
+          # VITE_GOOGLE_CLIENT_ID を登録すると有効化されます。未設定でもビルドは通り、
+          # 同期機能だけが無効表示になります。詳しくは docs/google-drive-sync.md を参照。
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
