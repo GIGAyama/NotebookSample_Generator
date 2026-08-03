@@ -30,6 +30,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # 先生や児童の端末に配られるライブラリに、既知の脆弱性が無いか確かめる。
+      # ここで止まったら、直すまでデプロイしない。
+      - name: Audit dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      # ノートが消えないこと（ローカルとドライブの統合ロジック）を守るためのテスト。
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
         env:

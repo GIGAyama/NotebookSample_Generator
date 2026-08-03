@@ -4,6 +4,18 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/NotebookSample_Generator/favicon.png" />
     <link rel="apple-touch-icon" href="/NotebookSample_Generator/apple-touch-icon.png" />
+    <!--
+      Content-Security-Policy（読み込んでよい先の許可リスト）
+      ここに書いていない場所からは、スクリプトも画像も一切読み込まれない。
+      万一どこかに不正なコードが混入しても、外部へデータを送り出せないようにするための保険。
+      許可している宛先は以下の4つだけで、いずれもこのアプリが実際に使っているもの:
+        - fonts.googleapis.com / fonts.gstatic.com … 本文フォント（Zen Maru Gothic）
+        - accounts.google.com                      … Googleログイン（同期を使うときだけ）
+        - www.googleapis.com                       … Googleドライブの読み書き（同上）
+      style-src の 'unsafe-inline' は、画面のCSSを実行時に <style> として差し込む
+      React + Tailwind の構成上どうしても必要なため残している。
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://accounts.google.com https://www.googleapis.com https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; frame-src https://accounts.google.com; base-uri 'self'; form-action 'none'" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="小学校のノート指導用の見本（板書計画）を作成・印刷できるツール" />
     <meta name="theme-color" content="#047857" />
