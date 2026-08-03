@@ -35,7 +35,12 @@ jobs:
       - name: Audit dependencies
         run: npm audit --omit=dev --audit-level=high
 
-      # ノートが消えないこと（ローカルとドライブの統合ロジック）を守るためのテスト。
+      # 必須ファイルの欠落・秘密情報の混入・コンフリクト痕の残りなどを機械的に確かめる。
+      # 検査の中身は GIGA 共通の正本（SchoolPlan_Editor）と同一。
+      - name: Project quality gate
+        run: npm run check
+
+      # ノートが消えないこと・見本の組み立てが変わらないことを守るためのテスト。
       - name: Test
         run: npm test
 

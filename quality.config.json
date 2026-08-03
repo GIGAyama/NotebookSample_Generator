@@ -1,0 +1,34 @@
+{
+  "entryHtml": "index.html",
+  "requiredFiles": [
+    "LICENSE",
+    ".gitignore",
+    "README.md",
+    "MANUAL.md",
+    "index.html",
+    "package.json"
+  ],
+  "ignoreDirectories": [
+    ".git",
+    ".clasp",
+    "node_modules",
+    "coverage",
+    "dist",
+    "dev-dist",
+    ".assets-original"
+  ],
+  "manifest": {
+    "forbiddenOauthScopes": [
+      "https://www.googleapis.com/auth/drive",
+      "https://mail.google.com/"
+    ]
+  },
+  "securityExceptions": {
+    "wildcardPostMessage": [],
+    "xFrameAllowAll": []
+  },
+  "maintainability": {
+    "warningLineCount": 5000,
+    "warningByteCount": 400000
+  }
+}

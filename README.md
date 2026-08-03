@@ -9,6 +9,9 @@
 
 インストールは不要です。ブラウザで開けばすぐ使えます。
 
+> **先生向けの使い方説明は [MANUAL.md](MANUAL.md) にあります。**
+> 専門用語を使わず、「うまくいかないとき」の対処もまとめています。
+
 ---
 
 ## ✏️ できること
@@ -106,10 +109,12 @@
 ## 🛠 開発
 
 ```bash
-npm ci        # 依存をインストール
-npm run dev   # 開発サーバー（http://localhost:5173）
-npm test      # テスト
-npm run build # 本番ビルド（dist/ に出力）
+npm ci          # 依存をインストール
+npm run dev     # 開発サーバー（http://localhost:5173）
+npm test        # テスト
+npm run check   # 品質ゲート（必須ファイル・秘密情報・巨大ファイルの検査）
+npm run quality # check と test をまとめて実行
+npm run build   # 本番ビルド（dist/ に出力）
 npm run preview # ビルド結果をローカルで確認
 ```
 
@@ -121,13 +126,18 @@ Google ドライブ同期をローカルで試す場合は、`.env.example` を 
 
 | ファイル | 役割 |
 |---|---|
-| `src/App.jsx` | 画面全体・テキスト解析・用紙レンダリング |
+| `src/App.jsx` | 画面の組み立て・用紙のレンダリング |
+| `src/parseText.js` | 見本テキストの解析（文章 → マス目 → ページ）。React 非依存の純関数 |
 | `src/googleDrive.js` | Google ドライブ連携（OAuth・読み書き・統合） |
 | `src/useGoogleDriveSync.js` | 同期の状態管理フック |
 | `vite.config.js` | ビルド設定・PWA マニフェスト |
-| `tests/` | 中核ロジックのテスト（`node:test`） |
+| `tests/` | 中核ロジックのテスト（`node:test`。依存を増やさない方針） |
+| `scripts/` | 品質ゲート。GIGA 共通の正本（SchoolPlan_Editor）と同一内容 |
+| `quality.config.json` | 品質ゲートの設定（必須ファイル・除外ディレクトリ等） |
 
-`main` ブランチへの push で GitHub Actions が自動的にビルドし、GitHub Pages へ公開します。
+`main` ブランチへの push で GitHub Actions が
+`npm audit` → `npm run check` → `npm test` → `npm run build` を実行し、
+すべて通ったときだけ GitHub Pages へ公開します。
 
 ---
 
