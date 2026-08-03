@@ -18,7 +18,11 @@ const DRIVE_FILES = 'https://www.googleapis.com/drive/v3/files';
 const DRIVE_UPLOAD = 'https://www.googleapis.com/upload/drive/v3/files';
 const USERINFO = 'https://www.googleapis.com/oauth2/v3/userinfo';
 
-export const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+// import.meta.env は Vite がビルド時に埋め込む。素の Node（＝テスト実行時）には
+// 存在しないため、存在確認をはさんでこのファイルを単体でも読み込めるようにしている。
+// ビルド後の挙動は従来と同一（Vite が値をそのまま埋め込む）。
+export const CLIENT_ID =
+  (typeof import.meta.env !== 'undefined' && import.meta.env.VITE_GOOGLE_CLIENT_ID) || '';
 
 // Client ID が設定されているときのみ機能を有効化する
 export const isConfigured = () => Boolean(CLIENT_ID);

@@ -4,3 +4,8 @@ dist
 dev-dist
 .env
 .env.local
+*.log
+
+# 画像圧縮の作業用（元画像は git の履歴に残っているため、複製はコミットしない）
+# 復元する場合: git show 1391595:public/favicon.png > public/favicon.png
+.assets-original/
