@@ -2,7 +2,7 @@
 
 先生向けの説明書です。パソコンにくわしくなくても使えるように書いています。
 
-**開くところ → https://gigayama.github.io/NotebookSample_Generator/**
+**開くところ → https://notebooksample-generator.giga-school.com/**
 
 インストールはいりません。上のアドレスを開けば、すぐ使えます。
 

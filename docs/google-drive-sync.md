@@ -48,8 +48,16 @@
 2. アプリケーションの種類: **ウェブ アプリケーション**。
 3. **承認済みの JavaScript 生成元** に、アプリを配信する URL の「オリジン」を追加します
    （パスは付けません）:
-   - 本番（GitHub Pages）: `https://gigayama.github.io`
+   - 本番: `https://notebooksample-generator.giga-school.com`
    - ローカル開発: `http://localhost:5173`
+
+   > ⚠️ **独自ドメインへ移ったときは、ここを必ず足しなおしてください。**
+   > 承認済みの JavaScript 生成元は**オリジンの完全一致**で照合されます。
+   > 旧オリジン（`https://gigayama.github.io`）だけを登録したままだと、
+   > 新しいアドレスからのトークン取得が `redirect_uri_mismatch` /
+   > `origin_mismatch` で拒否され、**Google ドライブ連携だけが動かなくなります**。
+   > アプリ本体は問題なく開けるので、原因が分かりにくい壊れ方をします。
+   > 旧オリジンは、しばらく併記しておいて構いません。
    > このツールはポップアップ（トークン）方式のため、**リダイレクト URI の登録は不要**です。
    > JavaScript 生成元だけで動作します。
 4. 作成後に表示される **クライアント ID**（`xxxxxxxx.apps.googleusercontent.com`）を控えます。
