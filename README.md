@@ -5,7 +5,7 @@
 「マスの数を数えながら黒板に書き写す」「見本を毎回手書きする」といった準備を、
 入力欄に文章を打つだけで終わらせることを目指しています。
 
-**▶ 公開ページ: https://gigayama.github.io/NotebookSample_Generator/**
+**▶ 公開ページ: https://notebooksample-generator.giga-school.com/**
 
 インストールは不要です。ブラウザで開けばすぐ使えます。
 

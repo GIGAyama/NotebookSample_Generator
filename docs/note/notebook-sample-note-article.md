@@ -10,7 +10,7 @@
 
 そこで作ったのが「ノート見本作成ツール PRO」です。左の入力欄に、ノートに書かせたい文章をそのまま打ちこむだけ。右側にマス目に割り付けられた見本ができあがり、そのまま A4 に印刷できます。
 
-https://gigayama.github.io/NotebookSample_Generator/
+https://notebooksample-generator.giga-school.com/
 
 インストールはいりません。学校のタブレットでも職員室のパソコンでも、このアドレスを開けばすぐに使えます。子どもの名前や成績を入れる欄はひとつもありません。入力するのは、先生が黒板に書こうとしていた文章だけです。
 
@@ -179,7 +179,7 @@ https://gigayama.github.io/NotebookSample_Generator/
 
 はじめて開いた先生に向けて、最初の一枚ができるまでを書きます。
 
-1. https://gigayama.github.io/NotebookSample_Generator/ を開きます。
+1. https://notebooksample-generator.giga-school.com/ を開きます。
 2. 左上の入力欄に、すでに文章が入っています。それを消して、ノートに書かせたい文章を打ちます。
 3. 左の「テンプレート」から、お使いのノートに近いものを選びます。国語の十五マス、算数の十七マスあたりが出発点になります。
 4. 右側の見本を見て、マスの数が合っていなければ「1行のマス数」を実際のノートと同じ数に直します。
