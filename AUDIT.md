@@ -103,7 +103,7 @@ Googleドライブにだけ保存されます。**サーバーは無く、児童
    - (B) 指定ブランチに P0〜P2 をまとめて載せる（コミットはフェーズごとに分ける）
 
 2. **【著作権表記】** LICENSE の著作権者を規約どおり `Copyright (c) 2026 GIGAyama` としてよいか。
-   フッターには `Developed by note.com/cute_borage86` の表記があります（`src/App.jsx:223`）。
+   フッターには `Developed by giga-school.com` の表記があります（`src/App.jsx:223`）。
 
 3. **【CSP の検証】** このセッションにはブラウザがあるため `npm run preview` で
    コンソールエラーの有無まで確認できます。ただし **Google ログインの実挙動は

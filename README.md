@@ -204,4 +204,4 @@ MIT License — 詳細は [LICENSE](LICENSE) を参照してください。
 **他校の先生も自由に使えます。** 改変も再配布も可能です。校内向けに文言を変えたり、
 学年に合わせてテンプレートを足したりして構いません。
 
-Developed by [cute_borage86](https://note.com/cute_borage86)
+Developed by [GIGA山](https://giga-school.com)
