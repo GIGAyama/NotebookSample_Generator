@@ -304,4 +304,4 @@
 **どの学校でも自由に使え、校内向けに作りかえても構いません。**
 
 うまくいかないことや「こうだったらいいのに」があれば、
-GitHub の Issues か、[作者のページ](https://note.com/cute_borage86) までお知らせください。
+GitHub の Issues か、[作者のページ](https://giga-school.com) までお知らせください。
