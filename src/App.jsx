@@ -226,6 +226,9 @@ const Header = ({ onShowHelp, onShowSupport, onShowData, onTogglePanel }) => (
 const Footer = () => (
   <footer className="w-full bg-white border-t border-slate-200 py-1 text-center text-xs text-slate-500 font-bold no-print relative z-10">
     <p>&copy; {new Date().getFullYear()} ノート見本作成ツール Developed by <a href="https://giga-school.com" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 hover:underline">GIGA山</a></p>
+    {/* このアプリを先に見つけた人が、使い方を読みたくなったときに戻れる先。
+        上の GIGA山 はトップに行くので、そこからだと 38 本の中から探し直すことになる。 */}
+    <p><a href="https://giga-school.com/apps/notebooksample-generator/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 hover:underline">使い方を読む</a></p>
   </footer>
 );
 
