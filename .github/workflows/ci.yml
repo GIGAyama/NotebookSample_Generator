@@ -1,0 +1,51 @@
+# =====================================================================
+# ci.yml — このリポジトリの最低限の点検
+# =====================================================================
+# このリポジトリは自前の品質ゲート（scripts/check-project.mjs）と
+# テスト（tests/*.test.js）を**すでに持っている**。ところがそれを走らせる
+# 仕組みが無く、書いたきり誰も回していなかった。
+#
+#   1. quality — npm run check（品質ゲート）と npm test をまとめて走らせる。
+#      package.json にある quality がその 2 つを順に呼ぶ。
+#   2. drift   — 配られたスキルが正本からずれていないか。
+#
+# ⚠️ これまで deploy.yml しか無く、それは main への push でしか動かなかった。
+#    持っている検査を、置いたまま一度も回していない状態だった。
+#
+# ⚠️ ビルドは deploy.yml が配信のときに行う。ここでは重ねない。
+#    quality が通れば、配信は deploy.yml の側で確かめられる。
+# =====================================================================
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 品質ゲートとテスト
+        run: npm run quality
+
+  # 配られたスキル（.claude/skills/）が正本からずれていないか。
+  # 正本は GIGAyama.github.io/standards/ にあり、そこを checkout して直に照合する。
+  # 実行時の依存は増えない（このリポジトリには何も足さない）。
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: GIGAyama/GIGAyama.github.io
+          path: .standards-src
+      - name: 正本とのずれ検知
+        run: node .standards-src/standards/check-drift.mjs --standards .standards-src/standards
