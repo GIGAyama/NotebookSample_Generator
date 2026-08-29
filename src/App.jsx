@@ -223,12 +223,29 @@ const Header = ({ onShowHelp, onShowSupport, onShowData, onTogglePanel }) => (
   </nav>
 );
 
+/* ⚠️ 1 行に収める。flex-nowrap と min-w-0 の 2 つが要る。nowrap だけだと、
+   クレジットの文字列が縮まずに列を押し広げて横スクロールになる。
+   狭い画面ではクレジットが … で切れる。もとはクレジットと「使い方を読む」で
+   2 行あり、そのぶん見本を組む場所が狭かった。 */
 const Footer = () => (
-  <footer className="w-full bg-white border-t border-slate-200 py-1 text-center text-xs text-slate-500 font-bold no-print relative z-10">
-    <p>&copy; {new Date().getFullYear()} ノート見本作成ツール Developed by <a href="https://giga-school.com" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 hover:underline">GIGA山</a></p>
-    {/* このアプリを先に見つけた人が、使い方を読みたくなったときに戻れる先。
-        上の GIGA山 はトップに行くので、そこからだと 38 本の中から探し直すことになる。 */}
-    <p><a href="https://giga-school.com/apps/notebooksample-generator/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 hover:underline">使い方を読む</a></p>
+  <footer className="w-full flex flex-nowrap items-center justify-center gap-1 bg-white border-t border-slate-200 py-1 text-center text-xs text-slate-500 font-bold no-print relative z-10">
+    <span className="min-w-0 truncate">&copy; {new Date().getFullYear()} ノート見本作成ツール Developed by <a href="https://giga-school.com" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 hover:underline">GIGA山</a></span>
+    {/* ⚠️ 行き先のリンクを手で書かないこと。中身は正本の部品
+        standards/web/giga-app-links.js（配布物 public/giga-app-links.js）が
+        この中に出す。文言も並びも行き先も、あちらで決まっている。
+
+        ⚠️ ここにあった「使い方を読む」（紹介記事へのリンク）は外した。
+           紹介記事は「なぜ作ったか」を、まだ使っていない先生に向けて書いた
+           もので、いま画面の前で困っている人が求めるものではない。
+           艦隊のほかのアプリでも既に外れている。読み物への道は、
+           つかいかたのページの中に置いてある。
+
+        ⚠️ <div> にしないこと。そこで改行が入ってフッターが 2 行に戻る。
+
+        ⚠️ data-links で「つかいかた」を外してある。このアプリにはまだ
+           docs/manual/ が無く、既定のまま出すと行き止まりのリンクになる。
+           マニュアルを書いたら、この属性ごと消すこと。 */}
+    <span data-giga-links data-links="terms,privacy" />
   </footer>
 );
 
