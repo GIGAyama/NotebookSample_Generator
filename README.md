@@ -9,7 +9,8 @@
 
 インストールは不要です。ブラウザで開けばすぐ使えます。
 
-> **先生向けの使い方説明は [MANUAL.md](MANUAL.md) にあります。**
+> **先生向けの使い方説明は [docs/manual/manual.md](docs/manual/manual.md) にあります**
+> （公開ページ: https://giga-school.com/apps/notebooksample-generator/manual/ ）。
 > 専門用語を使わず、「うまくいかないとき」の対処もまとめています。
 
 ---
