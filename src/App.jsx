@@ -242,10 +242,12 @@ const Footer = () => (
 
         ⚠️ <div> にしないこと。そこで改行が入ってフッターが 2 行に戻る。
 
-        ⚠️ data-links で「つかいかた」を外してある。このアプリにはまだ
-           docs/manual/ が無く、既定のまま出すと行き止まりのリンクになる。
-           マニュアルを書いたら、この属性ごと消すこと。 */}
-    <span data-giga-links data-links="terms,privacy" />
+        ⚠️ data-links は書かない（既定の「つかいかた・利用規約・プライバシー」が
+           3 つとも出る）。2026-08-31 に docs/manual/manual.md を書いたので、
+           「つかいかた」を外していた data-links="terms,privacy" を消した。
+           行き先は giga-school.com/apps/<slug>/manual/ で、ポータルが毎朝
+           そのファイルから組み直している。 */}
+    <span data-giga-links />
   </footer>
 );
 
