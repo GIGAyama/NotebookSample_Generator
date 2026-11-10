@@ -18,7 +18,8 @@ import {
 // 1. デザインと印刷用の特殊スタイル（CSS）
 // ==========================================
 const globalStyles = `
-  @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap');
+  /* ⚠️ ここに外の @import を書かないこと。Zen Maru Gothic は index.html が
+        読む fonts.css（自己ホスト。npm run build:fonts の生成物）から来る。 */
 
   :root {
     --font-kyokasho: "UD Digi Kyokasho N-R", "UD Digi Kyokasho N-B", "Klee One", "BIZ UDPMincho", "Yu Mincho", serif;
