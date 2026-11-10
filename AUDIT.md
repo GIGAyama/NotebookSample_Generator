@@ -119,6 +119,9 @@ Googleドライブにだけ保存されます。**サーバーは無く、児童
    CSP は締められる一方、日本語 woff2 は分割配信で数百KBになります。
    **現状は Service Worker でキャッシュ済みのためオフラインでも動作します。**
    → 現状維持（CSP に `fonts.googleapis.com` を明示許可）を推奨しますが、ご判断ください。
+   → **2026-11-10 追記: 自己ホスト化した。** 艦隊の決まり（Zero External CDN）に合わせ、
+     正本の `tools/fonts/build-fonts.mjs` で 1〜6 年の漢字と画面に出る字だけを収録した
+     （6 面・約 755KB。Service Worker が先読みする）。CSP からも 2 つの宛先を外した。
 
 ---
 

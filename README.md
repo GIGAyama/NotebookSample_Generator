@@ -127,11 +127,15 @@
 
 | 宛先 | 用途 | いつ |
 |---|---|---|
-| `fonts.googleapis.com` / `fonts.gstatic.com` | 本文フォント（Zen Maru Gothic）の取得 | 初回表示時。以降はキャッシュ |
 | `accounts.google.com` | Google ログイン画面・認証スクリプト | 同期を使うときだけ |
 | `www.googleapis.com` | ドライブへの読み書き・アカウント表示 | 同期を使うときだけ |
 
-`index.html` の Content-Security-Policy で、この4つ以外への通信を禁止しています。
+`index.html` の Content-Security-Policy で、この2つ以外への通信を禁止しています。
+Google ドライブ同期を使わなければ、外への通信は 1 つも出ません。
+
+本文フォント（Zen Maru Gothic）は、2026-11-10 から自分のところで配っています
+（`fonts/`・`fonts.css`。作り直すには `npm run build:fonts`）。それまでは
+`fonts.googleapis.com` / `fonts.gstatic.com` から実行時に読んでいました。
 
 ---
 

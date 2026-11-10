@@ -8,15 +8,25 @@
       Content-Security-Policy（読み込んでよい先の許可リスト）
       ここに書いていない場所からは、スクリプトも画像も一切読み込まれない。
       万一どこかに不正なコードが混入しても、外部へデータを送り出せないようにするための保険。
-      許可している宛先は以下の4つだけで、いずれもこのアプリが実際に使っているもの:
-        - fonts.googleapis.com / fonts.gstatic.com … 本文フォント（Zen Maru Gothic）
+      許可している宛先は以下の2つだけで、いずれもこのアプリが実際に使っているもの:
         - accounts.google.com                      … Googleログイン（同期を使うときだけ）
         - www.googleapis.com                       … Googleドライブの読み書き（同上）
+      ⚠️ 書体（Zen Maru Gothic）の宛先はここに戻さないこと。2026-11-10 まで
+         Google Fonts の 2 つの宛先を許可して実行時に読んでいたが、
+         いまは自分のところから配っている（下の fonts.css）。Google ドライブ同期を
+         使わない学校では、外への通信は 1 つも出ない。
       style-src の 'unsafe-inline' は、画面のCSSを実行時に <style> として差し込む
       React + Tailwind の構成上どうしても必要なため残している。
     -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://accounts.google.com https://www.googleapis.com https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; frame-src https://accounts.google.com; base-uri 'self'; form-action 'none'" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://accounts.google.com https://www.googleapis.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; frame-src https://accounts.google.com; base-uri 'self'; form-action 'none'" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- 書体は自分のところから配る（生成物。npm run build:fonts で作り直す）。
+         ⚠️ Google Fonts を実行時に読む形に戻さないこと。学校のフィルタが塞ぐと、
+            塞がり方が「拒否」ではなく「握ったまま返さない」ときに、<style> の中の
+            @import が終わらず、**その <style> に書いた印刷用の CSS まで効かなくなる**。
+            収録していない字（先生が打った珍しい漢字など）は端末のフォントに落ちる。
+            書体が変わるだけで、□ にはならない。 -->
+    <link rel="stylesheet" href="./fonts.css" />
     <meta name="description" content="小学校のノート指導用の見本（板書計画）を作成・印刷できるツール" />
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="GIGA school">
